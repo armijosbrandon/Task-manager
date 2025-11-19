@@ -28,6 +28,7 @@ public class Main extends Application {
         stage.setTitle("Prueba JavaFX");
         stage.setScene(scene);
         stage.show();
+        
     }
 
     public static void main(String[] args) {
