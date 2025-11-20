@@ -14,11 +14,12 @@ public class View {
 
 	private void initializeUI() {
 		
-		/*Scene scene = new Scene();
-        scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+		VBox principal= new VBox();
+		Scene scene = new Scene(principal);
+        scene.getStylesheets().add(getClass().getResource("/css/aplication.css").toExternalForm());
         stage.setScene(scene);
         stage.setMaximized(true);
-		stage.setTitle("Gestor de Tareas");*/
+		stage.setTitle("Gestor de Tareas");
 	}
 
 	public void show() {
