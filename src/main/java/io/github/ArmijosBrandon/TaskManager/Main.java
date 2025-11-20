@@ -1,34 +1,25 @@
 package io.github.ArmijosBrandon.TaskManager;
 
+import io.github.ArmijosBrandon.TaskManager.View;
+import io.github.ArmijosBrandon.TaskManager.Model;
+import io.github.ArmijosBrandon.TaskManager.Controller;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.StackPane;
+
 import javafx.stage.Stage;
 
 
 public class Main extends Application {
-	
     @Override
-    public void start(Stage stage) {
-        // Crear un botón
-        Button boton = new Button("¡Haz clic aquí!");
-        boton.setOnAction(e -> boton.setText("😎 ¡Funcionó!"));
-
-        // Crear layout (contenedor)
-        StackPane root = new StackPane(boton);
-
-        // Crear escena
-        Scene scene = new Scene(root, 300, 200);
-
-        // Opcional: aplicar CSS
-        // scene.getStylesheets().add(getClass().getResource("/estilos.css").toExternalForm());
-
-        // Configurar y mostrar ventana
-        stage.setTitle("Prueba JavaFX");
-        stage.setScene(scene);
-        stage.show();
-        
+    public void start(Stage stage) {   
+        try{
+        	Model model= new Model();
+        	View view = new View(stage);
+        	new Controller(model,view);
+        	view.show();
+        }catch(Exception e) {
+			e.printStackTrace();
+		}
     }
 
     public static void main(String[] args) {
