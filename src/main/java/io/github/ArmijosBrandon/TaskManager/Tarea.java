@@ -37,6 +37,7 @@ public class Tarea {
     public LocalDate getFecha_final() { return fecha_final.get(); }
     public String getCategoria() { return categoria.get(); }
     public String getPrioridad() { return prioridad.get(); }
+    public String getEstado() { return estado.get(); }
     public String getObservacion() { return observacion.get(); }
 
 }

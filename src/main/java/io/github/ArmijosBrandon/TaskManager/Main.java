@@ -12,18 +12,23 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage stage) {   
-        try{
-        	Model model= new Model();
-        	View view = new View(stage);
-        	new Controller(model,view);
-        	view.show();
-        }catch(Exception e) {
-			e.printStackTrace();
-		}
+        Controller controller = null; 
+
+        try {
+            Model model = new Model();
+            View view = new View(stage);
+            controller = new Controller(model, view); 
+            view.show();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        Controller finalController = controller; // para usarlo en lambda(e->) por que no permite si no es un objeto final tons creo una copia fija
+        stage.setOnCloseRequest(e -> finalController.close()); //cerrar la conexion de sqlite cuando se cierre el programa
     }
 
     public static void main(String[] args) {
-        // Lanzar la app JavaFX
         launch();
     }
 }
+
