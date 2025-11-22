@@ -4,3 +4,9 @@
 .button{
 	
 }
+
+/*selector de etiqueta de iconos, aplica a todos */
+.ikonli-font-icon {
+    -fx-fill: white;       /* color del icono */
+    -fx-font-size: 18px; /* tamaño del icono */
+}
