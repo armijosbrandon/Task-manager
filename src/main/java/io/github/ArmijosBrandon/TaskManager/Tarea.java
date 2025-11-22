@@ -15,17 +15,19 @@ public class Tarea {
     private final ObjectProperty<LocalDate>  fecha_final;
     private final SimpleStringProperty categoria;
     private final SimpleStringProperty prioridad;
+    private final SimpleStringProperty estado;
     private final SimpleStringProperty observacion;
 
     
 
-    public Tarea(int num, String tarea_nombre, LocalDate fecha_inicio, LocalDate fecha_final, String categoria, String prioridad, String observacion) {
+    public Tarea(int num, String tarea_nombre, LocalDate fecha_inicio, LocalDate fecha_final, String categoria, String prioridad,String estado ,String observacion) {
         this.num = new SimpleIntegerProperty(num); //permite Vincularse (binding) con elementos de la interfaz (por ejemplo un TableView, TextField, etc.).
         this.tarea_nombre = new SimpleStringProperty(tarea_nombre); 
         this.fecha_inicio = new SimpleObjectProperty<>(fecha_inicio);//creo un objeto de local date que escuche bindings y use las propiedades de ObjectProperty<LocalDate> fecha_inicio 
         this.fecha_final = new SimpleObjectProperty<>(fecha_final);
         this.categoria = new SimpleStringProperty(categoria); 
         this.prioridad = new SimpleStringProperty(prioridad); 
+        this.estado = new SimpleStringProperty(estado); 
         this.observacion = new SimpleStringProperty(observacion); 
     }
     
