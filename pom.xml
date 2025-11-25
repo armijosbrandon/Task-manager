@@ -54,6 +54,13 @@
 	    <version>12.4.0</version>
 	</dependency>
 	
+	<!-- controles extras de javafx con opciones como autocompletado-->
+	<!-- https://mvnrepository.com/artifact/org.controlsfx/controlsfx -->
+	<dependency>
+	    <groupId>org.controlsfx</groupId>
+	    <artifactId>controlsfx</artifactId>
+	    <version>11.2.2</version>
+	</dependency>
 	
     <dependency>
       <groupId>junit</groupId>
