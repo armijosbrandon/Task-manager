@@ -114,8 +114,7 @@ public class Model {
 			pstmt.executeUpdate(); //ejecuta orden
 			
 			//consultar ultimo num agregado
-			try(Statement stmt= conn.createStatement();
-				ResultSet rs= pstmt.getGeneratedKeys()){// pstmt.getGeneratedKeys devuelve las claves generadas en la insercion
+			try(ResultSet rs= pstmt.getGeneratedKeys()){// pstmt.getGeneratedKeys devuelve las claves generadas en la insercion
 					while(rs.next()) {
 						num_tarea=rs.getInt(1);//obtiene el primer registro que es el ultimo num ingresado
 					}

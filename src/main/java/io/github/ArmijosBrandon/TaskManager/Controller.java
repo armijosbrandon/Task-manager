@@ -152,7 +152,7 @@ public class Controller {
 	public void inicializarTareasTabla() {
 
 		//obtener tabla con tareas actuales en la bd
-		TableView<Tarea> tabla_tareas= view.getTablaTareas();
+		tabla_tareas= view.getTablaTareas();
 		try {
 			tabla_tareas.setItems(model.obtenerTareas());//cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
 		} catch (SQLException e) {

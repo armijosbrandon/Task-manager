@@ -72,6 +72,7 @@ public class View {
 		HBox contBotones= new HBox(10,btnNuevaTarea,btnEditTask,btnDeleteTask,btnCompleteTask,searchBox,btnFilterTask);
 		//CONTENEDOR TABLA DE TAREAS
 		tabla_tareas= new TableView<>();
+		tabla_tareas.setPlaceholder(new Label("Ingresa tus tareas con el boton \"Nueva tarea\""));
 		//columnas
 		TableColumn<Tarea, Integer> colNum = new TableColumn<>("Num");//esta fila leera un dato entero de un objeto tarea
 		TableColumn<Tarea, String> colTareaNombre = new TableColumn<>("Tarea");
