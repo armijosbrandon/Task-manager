@@ -101,14 +101,14 @@ public class Controller {
         
         //evento de editar tarea seleccionada
         view.getBtnEditarTarea().setOnAction(e->{
-        	form.setVisible(true);
-        	form.setManaged(true);
-        	btnComfirmarCambios.setVisible(true);
-        	btnComfirmarCambios.setManaged(true);
-        	btnGuardarTarea.setVisible(false);
-        	btnGuardarTarea.setManaged(false);
         	if(tabla_tareas.getSelectionModel().getSelectedItem()!=null) {
         		llenarFormCampoActivo();
+        		form.setVisible(true);
+            	form.setManaged(true);
+            	btnComfirmarCambios.setVisible(true);
+            	btnComfirmarCambios.setManaged(true);
+            	btnGuardarTarea.setVisible(false);
+            	btnGuardarTarea.setManaged(false);
         	}else{
         		view.setAlerta("Selecciona una fila para poder editar.");
         	}	
@@ -144,6 +144,34 @@ public class Controller {
             }
         });
         
+        view.getBtnBorrarTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+        	if(tarea_activa!=null) {
+        		if(view.getConfirmacion()) {
+            		try {
+        				model.borrarTarea(tarea_activa.getNum());
+        				tabla_tareas.refresh();
+        			} catch (SQLException e1) {
+        				view.setAlerta(
+        					    "No se pudo eliminar la tarea.\n\n" +
+        					    "Posibles causas:\n" +
+        					    "   • La base de datos está en uso por otro programa.\n" +
+        					    "   • El archivo 'TaskManager.db' está dañado.\n" +
+        					    "   • La tarea ya no existe o no pudo accederse.\n\n" +
+        					    "Recomendaciones:\n" +
+        					    "   • Cierra y vuelve a abrir la aplicación.\n" +
+        					    "   • Asegúrate de que la base de datos no esté siendo utilizada.\n\n" +
+        					    "Detalles técnicos:\n" + e1.getMessage()
+        					);
+        			}
+            	}
+        	}else {
+        		view.setAlerta("No hay ninguna fila seleccionada");
+        	}
+        	
+        	
+        });
+        
         //btn comfirmar cambios del form
         view.getBtnConfirmarCambios().setOnAction(e->{
         	obtenerElementosForm();
@@ -177,7 +205,43 @@ public class Controller {
             form.setManaged(false);
         });
     }
-    
+
+	private void inicializarConexion() {
+        try {
+            model.setConnection(model.connect());  
+        } catch (SQLException e) {
+            view.setAlerta(
+                "No se pudo conectar con la base de datos.\n\n" +
+                "Detalles: " + e.getMessage() + "\n\n" +
+                "Posibles soluciones:\n" +
+                "• Verifica que tienes permisos para crear archivos en esta carpeta.\n" +
+                "• Asegúrate de que el archivo 'TaskManager.db' no esté corrupto.\n" +
+                "• Cierra y vuelve a abrir la aplicación."
+            );
+        }
+    }
+	public void inicializarTareasTabla() {
+
+		//obtener tabla con tareas actuales en la bd
+		tabla_tareas= view.getTablaTareas();
+		try {
+			tabla_tareas.setItems(model.obtenerTareas());//cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
+		} catch (SQLException e) {
+			 view.setAlerta(
+		                "No se pudieron cargar las tareas desde la base de datos.\n\n" +
+		                "Posibles causas:\n" +
+		                "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
+		                "   • La base de datos está corrupta.\n" +
+		                "   • Algún dato almacenado es inválido.\n\n" +
+		                "Qué puedes hacer:\n" +
+		                "   • Cierra y vuelve a abrir la aplicación.\n" +
+		                "   • Asegúrate de que ninguna otra aplicación esté usando la base de datos.\n" +
+		                "   • Si el problema continúa, elimina el archivo 'TaskManager.db'.\n\n" +
+		                "Detalles: " + e.getMessage()
+		     );
+		}
+	}
+	
 	private void resetearForm() {
 		view.setTxtNombre_tarea("");
 		view.setFecha_inicio(LocalDate.now());
@@ -230,42 +294,6 @@ public class Controller {
 		view.setCbEstado(item_estado);
 		view.setTxtObservacion(tarea_activa.getObservacion());
 		
-	}
-
-	private void inicializarConexion() {
-        try {
-            model.setConnection(model.connect());  
-        } catch (SQLException e) {
-            view.setAlerta(
-                "No se pudo conectar con la base de datos.\n\n" +
-                "Detalles: " + e.getMessage() + "\n\n" +
-                "Posibles soluciones:\n" +
-                "• Verifica que tienes permisos para crear archivos en esta carpeta.\n" +
-                "• Asegúrate de que el archivo 'TaskManager.db' no esté corrupto.\n" +
-                "• Cierra y vuelve a abrir la aplicación."
-            );
-        }
-    }
-	public void inicializarTareasTabla() {
-
-		//obtener tabla con tareas actuales en la bd
-		tabla_tareas= view.getTablaTareas();
-		try {
-			tabla_tareas.setItems(model.obtenerTareas());//cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
-		} catch (SQLException e) {
-			 view.setAlerta(
-		                "No se pudieron cargar las tareas desde la base de datos.\n\n" +
-		                "Posibles causas:\n" +
-		                "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
-		                "   • La base de datos está corrupta.\n" +
-		                "   • Algún dato almacenado es inválido.\n\n" +
-		                "Qué puedes hacer:\n" +
-		                "   • Cierra y vuelve a abrir la aplicación.\n" +
-		                "   • Asegúrate de que ninguna otra aplicación esté usando la base de datos.\n" +
-		                "   • Si el problema continúa, elimina el archivo 'TaskManager.db'.\n\n" +
-		                "Detalles: " + e.getMessage()
-		     );
-		}
 	}
 	
 	//funcion para cerrar comunicacion cuando se cierra la app

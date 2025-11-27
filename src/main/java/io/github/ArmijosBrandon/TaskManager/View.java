@@ -12,6 +12,7 @@ import javafx.scene.layout.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -22,6 +23,9 @@ public class View {
 	//btns de pantalla principal
 	private Button btnNuevaTarea;
 	private Button btnEditarTarea;
+	private Button btnBorrarTarea;
+	private Button btnCompletarTarea;
+	
 	private TableView<Tarea> tabla_tareas;
 	private TextField txtNombre_tarea;
 	private DatePicker fecha_inicio;
@@ -56,13 +60,13 @@ public class View {
 		btnEditarTarea.setGraphic(new FontIcon("far-edit"));
 		btnEditarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
-		Button btnDeleteTask = new Button("Eliminar Tarea");
-		btnDeleteTask.setGraphic(new FontIcon("fas-trash"));
-		btnDeleteTask.setContentDisplay(ContentDisplay.RIGHT);
+		btnBorrarTarea = new Button("Eliminar Tarea");
+		btnBorrarTarea.setGraphic(new FontIcon("fas-trash"));
+		btnBorrarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
-		Button btnCompleteTask = new Button("Eliminar Tarea");
-		btnCompleteTask.setGraphic(new FontIcon("fas-check-circle"));
-		btnCompleteTask.setContentDisplay(ContentDisplay.RIGHT);
+		btnCompletarTarea = new Button("Eliminar Tarea");
+		btnCompletarTarea.setGraphic(new FontIcon("fas-check-circle"));
+		btnCompletarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
 		TextField txtSearch = new TextField();
 		txtSearch.setPromptText("Buscar.....");
@@ -71,7 +75,7 @@ public class View {
 		Button btnFilterTask = new Button();
 		btnFilterTask.setGraphic(new FontIcon("fas-filter"));
 		
-		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnDeleteTask,btnCompleteTask,searchBox,btnFilterTask);
+		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnCompletarTarea,searchBox,btnFilterTask);
 		//CONTENEDOR TABLA DE TAREAS
 		tabla_tareas= new TableView<>();
 		tabla_tareas.setPlaceholder(new Label("Ingresa tus tareas con el boton \"Nueva tarea\""));
@@ -200,6 +204,14 @@ public class View {
 	public Button getBtnEditarTarea() {
 		return btnEditarTarea;
 	}
+	
+	public Button getBtnBorrarTarea() {
+		return btnBorrarTarea;
+	}
+
+	public Button getBtnCompletarTarea() {
+		return btnCompletarTarea;
+	}
 
 	public TextField getTxtNombre_tarea() {
 		return txtNombre_tarea;
@@ -268,12 +280,6 @@ public class View {
 		
 	}
 
-	
-	public void show() {
-		stage.show();
-		
-	}
-
 	public void setAlerta(String error) {
 		Alert alerta = new Alert(AlertType.ERROR);
 		alerta.setTitle("!Error");
@@ -281,6 +287,29 @@ public class View {
 		alerta.setContentText(error);
 		alerta.showAndWait();
 	}
+	
+	public Boolean getConfirmacion() {
+		Alert alerta = new Alert(AlertType.CONFIRMATION);
+		alerta.setTitle("Confirmacion");
+		alerta.setHeaderText("¿Estas seguro de eliminar esta tarea?"); 
+		alerta.setContentText("Se eliminara esta tarea permamentemente");
+		
+		Optional<ButtonType> result = alerta.showAndWait(); // me devolvera el boton que haiga presionado el usuario, Optional es un contenedor que puede tener un valor o estar vacío. En este caso, normalmente tendrá un botón, pero JavaFX lo usa para evitar errores si la ventana se cierra de forma inesperada.
+		if (result.isPresent() && result.get() == ButtonType.OK) { //is present sera verdadero si hay algo en el optional
+		    // El usuario confirmó
+			return true;
+		} else {
+			// El usuario cancelo o cerro el dialogo forsozamente
+			return false;
+		}
+	}
+	
+	public void show() {
+		stage.show();
+		
+	}
+
+	
 
 
 

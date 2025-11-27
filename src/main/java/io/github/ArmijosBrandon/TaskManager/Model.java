@@ -136,21 +136,35 @@ public class Model {
 			pstmt.setString(7, observacion);
 			pstmt.setInt(8, num_tarea);
 			pstmt.executeUpdate();
+			
+			for (Tarea t : lista_tareas) {
+		        if (t.getNum() == num_tarea) {
+		            t.setTarea_nombre(nombre_tarea);
+		            t.setFecha_inicio(fecha_inicio);
+		            t.setFecha_final(fecha_final);
+		            t.setCategoria(categoria);
+		            t.setPrioridad(prioridad);
+		            t.setEstado(estado);
+		            t.setObservacion(observacion);
+		            break; //salir en cuando encontremos nuestra tarea
+		        }
+		    }
 		}
-		for (Tarea t : lista_tareas) {
-	        if (t.getNum() == num_tarea) {
-	            t.setTarea_nombre(nombre_tarea);
-	            t.setFecha_inicio(fecha_inicio);
-	            t.setFecha_final(fecha_final);
-	            t.setCategoria(categoria);
-	            t.setPrioridad(prioridad);
-	            t.setEstado(estado);
-	            t.setObservacion(observacion);
-	            break; //salir en cuando encontremos nuestra tarea
-	        }
-	    }
-
-		
+	}
+	public void borrarTarea(int num_tarea) throws SQLException {
+		String sqlEliminar="Delete from Tareas where num= ?";
+		try(PreparedStatement pstmt = conn.prepareStatement(sqlEliminar)){
+			pstmt.setInt(1, num_tarea);
+			pstmt.executeUpdate();
+			
+			for(Tarea t:lista_tareas) {
+				if(t.getNum()==num_tarea) {
+					lista_tareas.remove(t);
+					break;
+				}
+			}
+			
+		}
 		
 	}
 
