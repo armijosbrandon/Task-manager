@@ -39,5 +39,14 @@ public class Tarea {
     public String getPrioridad() { return prioridad.get(); }
     public String getEstado() { return estado.get(); }
     public String getObservacion() { return observacion.get(); }
+    
+    public void setTarea_nombre(String value) { tarea_nombre.set(value); }
+    public void setFecha_inicio(LocalDate value) { fecha_inicio.set(value); }
+    public void setFecha_final(LocalDate value) { fecha_final.set(value); }
+    public void setCategoria(String value) { categoria.set(value); }
+    public void setPrioridad(String value) { prioridad.set(value); }
+    public void setEstado(String value) { estado.set(value); }
+    public void setObservacion(String value) { observacion.set(value); }
+
 
 }

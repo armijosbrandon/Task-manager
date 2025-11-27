@@ -77,8 +77,8 @@ public class Model {
 	         ResultSet rs = stmt.executeQuery(sql)) {
 	        while (rs.next()) {
 	        	String strFecha_inicio= rs.getString("fecha_inicio");
-	        	String strFecha_final= rs.getString("fecha_inicio");
-	        	LocalDate fecha_inicio = (strFecha_inicio !=null && !strFecha_inicio.isEmpty())?LocalDate.parse(strFecha_final):null; //localdate.parse no permite valores null
+	        	String strFecha_final= rs.getString("fecha_final");
+	        	LocalDate fecha_inicio = (strFecha_inicio !=null && !strFecha_inicio.isEmpty())?LocalDate.parse(strFecha_inicio):null; //localdate.parse no permite valores null
 	        	LocalDate fecha_final = (strFecha_final!=null&& !strFecha_final.isEmpty())?LocalDate.parse(strFecha_final):null;
 	        	lista_tareas.add(new Tarea(
 	                    rs.getInt("num"),
@@ -122,10 +122,35 @@ public class Model {
 			agregarCategoria(categoria);
 		}
 		lista_tareas.add(new Tarea(num_tarea,tarea_nombre,fecha_inicio,fecha_final, categoria, prioridad, estado, observacion));
-	System.out.println("tarea agregada existosamente");
 	}
 	
-	public void select() {
+	public void actualizarCampos(int num_tarea, String nombre_tarea, LocalDate fecha_inicio, LocalDate fecha_final,String categoria, String prioridad, String estado, String observacion) throws SQLException {
+	String sqlEditar= "Update Tareas set tarea_nombre =?, fecha_inicio =?, fecha_final=?, categoria=?, prioridad =?, estado=?, observacion=? where num=?";
+		try(PreparedStatement pstmt=conn.prepareStatement(sqlEditar)){
+			pstmt.setString(1, nombre_tarea);
+			pstmt.setString(2, fecha_inicio != null ? fecha_inicio.toString() : null);
+			pstmt.setString(3, fecha_final != null ? fecha_final.toString() : null);
+			pstmt.setString(4, categoria);
+			pstmt.setString(5, prioridad);
+			pstmt.setString(6, estado);
+			pstmt.setString(7, observacion);
+			pstmt.setInt(8, num_tarea);
+			pstmt.executeUpdate();
+		}
+		for (Tarea t : lista_tareas) {
+	        if (t.getNum() == num_tarea) {
+	            t.setTarea_nombre(nombre_tarea);
+	            t.setFecha_inicio(fecha_inicio);
+	            t.setFecha_final(fecha_final);
+	            t.setCategoria(categoria);
+	            t.setPrioridad(prioridad);
+	            t.setEstado(estado);
+	            t.setObservacion(observacion);
+	            break; //salir en cuando encontremos nuestra tarea
+	        }
+	    }
+
+		
 		
 	}
 

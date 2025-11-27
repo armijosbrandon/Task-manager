@@ -1,39 +1,41 @@
 package io.github.ArmijosBrandon.TaskManager;
 
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.*;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.*;
 
-import java.sql.Date;
+
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.controlsfx.control.textfield.TextFields;
+
 
 
 public class View {
 	private Stage stage;
+	//btns de pantalla principal
 	private Button btnNuevaTarea;
+	private Button btnEditarTarea;
 	private TableView<Tarea> tabla_tareas;
 	private TextField txtNombre_tarea;
 	private DatePicker fecha_inicio;
 	private DatePicker fecha_final;
 	private TextField txtCategoria;
-	private TextArea txtObservacion;
-	private Button btnGuardarTarea;
-	private Button btnCancelarNTarea;
 	private ComboBox<String> cbEstado;
 	private ComboBox<String> cbPrioridad;
-	private VBox formNuevaTarea;
+	private TextArea txtObservacion;
+	//btns de formulario
+	private Button btnConfirmarCambios;
+	private Button btnGuardarTarea;
+	private Button btnCancelar;
+
+	private VBox form;
 	public View(Stage stage) {
 		this.stage=stage;
 		initializeUI();
@@ -50,9 +52,9 @@ public class View {
 		//posicion del icono
 		btnNuevaTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
-		Button btnEditTask = new Button("Editar Tarea");
-		btnEditTask.setGraphic(new FontIcon("far-edit"));
-		btnEditTask.setContentDisplay(ContentDisplay.RIGHT);
+		btnEditarTarea = new Button("Editar Tarea");
+		btnEditarTarea.setGraphic(new FontIcon("far-edit"));
+		btnEditarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
 		Button btnDeleteTask = new Button("Eliminar Tarea");
 		btnDeleteTask.setGraphic(new FontIcon("fas-trash"));
@@ -69,7 +71,7 @@ public class View {
 		Button btnFilterTask = new Button();
 		btnFilterTask.setGraphic(new FontIcon("fas-filter"));
 		
-		HBox contBotones= new HBox(10,btnNuevaTarea,btnEditTask,btnDeleteTask,btnCompleteTask,searchBox,btnFilterTask);
+		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnDeleteTask,btnCompleteTask,searchBox,btnFilterTask);
 		//CONTENEDOR TABLA DE TAREAS
 		tabla_tareas= new TableView<>();
 		tabla_tareas.setPlaceholder(new Label("Ingresa tus tareas con el boton \"Nueva tarea\""));
@@ -88,10 +90,15 @@ public class View {
 		colTareaNombre.setCellValueFactory(new PropertyValueFactory<>("tarea_nombre"));
 		colFechaInicio.setCellValueFactory(new PropertyValueFactory<>("fecha_inicio"));
 		colFechaFinal.setCellValueFactory(new PropertyValueFactory<>("fecha_final"));
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //convierto local date a string con un formato especifico
+		
+		
+
 		colCategoria.setCellValueFactory(new PropertyValueFactory<>("categoria"));
 		colPrioridad.setCellValueFactory(new PropertyValueFactory<>("prioridad"));
 		colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
 		colObservacion.setCellValueFactory(new PropertyValueFactory<>("observacion"));
+	
 		//añado a la tabla las columnas
 		tabla_tareas.getColumns().addAll(
 			    colNum,
@@ -105,16 +112,17 @@ public class View {
 		);
 		
 		
+		
 		VBox pantallaPrincipal= new VBox(10,contTitulo,contBotones,tabla_tareas);
 		
 		//formulario de nueva tarea
-		formNuevaTarea= FormNuevaTarea();
-		formNuevaTarea.setVisible(false);
-		formNuevaTarea.setManaged(false);
-		formNuevaTarea.setStyle("-fx-background-color: #05f0ad");
+		form= form();
+		form.setVisible(false);
+		form.setManaged(false);
+		form.setStyle("-fx-background-color: #05f0ad");
 		
 		
-		StackPane general= new StackPane(pantallaPrincipal,formNuevaTarea); //stackpane para ponder uno encima de otro
+		StackPane general= new StackPane(pantallaPrincipal,form); //stackpane para ponder uno encima de otro
 		Scene scene = new Scene(general);
         scene.getStylesheets().add(getClass().getResource("/css/aplication.css").toExternalForm());
         stage.setScene(scene);
@@ -122,7 +130,7 @@ public class View {
 		stage.setTitle("Gestor de Tareas");
 	}
 	
-	public VBox FormNuevaTarea() {
+	public VBox form() {
 		Label Titulo= new Label("Agregar Tarea");
 		Label lblNombre= new Label("Nombre: "); 
 		txtNombre_tarea= new TextField();
@@ -151,10 +159,11 @@ public class View {
 		txtObservacion.setPromptText("Observaciones adicionales.");
 		
 		btnGuardarTarea = new Button("Agregar Tarea");
-		btnCancelarNTarea=new Button("Cancelar");
-		HBox botonesFormNuevaTarea= new HBox(10,btnGuardarTarea,btnCancelarNTarea);
+		btnConfirmarCambios= new Button("Confirmar Cambios");
+		btnCancelar=new Button("Cancelar");
+		HBox botonesform= new HBox(10,btnGuardarTarea,btnConfirmarCambios,btnCancelar);
 		
-		return new VBox(5, Titulo, lblNombre, txtNombre_tarea, lblFecha_inicio, fecha_inicio, lblFecha_final, fecha_final, lblCategoria, txtCategoria, cbPrioridad, cbEstado, lblObservacion, txtObservacion, botonesFormNuevaTarea);
+		return new VBox(5, Titulo, lblNombre, txtNombre_tarea, lblFecha_inicio, fecha_inicio, lblFecha_final, fecha_final, lblCategoria, txtCategoria, cbPrioridad, cbEstado, lblObservacion, txtObservacion, botonesform);
 	}
 	
 	public TableView<Tarea> getTablaTareas() {
@@ -163,6 +172,9 @@ public class View {
 	}
 	public Button getBtnNuevaTarea() {
 		return btnNuevaTarea;
+	}
+	public Button getBtnEditarTarea() {
+		return btnEditarTarea;
 	}
 
 	public TextField getTxtNombre_tarea() {
@@ -219,16 +231,19 @@ public class View {
 	public Button getBtnGuardarTarea() {
 		return btnGuardarTarea;
 	}
+	public Button getBtnConfirmarCambios() {
+		return btnConfirmarCambios;
+	}
 	
-	public VBox getformNuevaTarea() {
-		return formNuevaTarea;
+	public Button getBtnCancelar() {
+		return btnCancelar;
+	}
+	
+	public VBox getForm() {
+		return form;
 		
 	}
 
-	
-	public Button getBtnCancelarNTarea() {
-		return btnCancelarNTarea;
-	}
 	
 	public void show() {
 		stage.show();
@@ -242,5 +257,7 @@ public class View {
 		alerta.setContentText(error);
 		alerta.showAndWait();
 	}
+
+
 
 }
