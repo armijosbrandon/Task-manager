@@ -247,8 +247,6 @@ public class Controller {
 		view.setFecha_inicio(LocalDate.now());
 		view.setFecha_final(LocalDate.now().plusDays(5));
 		view.setTxtCategoria("");
-		view.setCbPrioridad(1);
-		view.setCbEstado(1);
 		view.setTxtObservacion("");
 		
 	}

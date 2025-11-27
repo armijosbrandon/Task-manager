@@ -64,7 +64,7 @@ public class View {
 		btnBorrarTarea.setGraphic(new FontIcon("fas-trash"));
 		btnBorrarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
-		btnCompletarTarea = new Button("Eliminar Tarea");
+		btnCompletarTarea = new Button("Completar Tarea");
 		btnCompletarTarea.setGraphic(new FontIcon("fas-check-circle"));
 		btnCompletarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
