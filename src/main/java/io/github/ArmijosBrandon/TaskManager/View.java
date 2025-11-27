@@ -92,7 +92,31 @@ public class View {
 		colFechaFinal.setCellValueFactory(new PropertyValueFactory<>("fecha_final"));
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //convierto local date a string con un formato especifico
 		
-		
+		//cellFactory determina como quiero  que se vea cada celda dentro de una columna
+		colFechaInicio.setCellFactory(column -> new TableCell<Tarea, LocalDate>() { //cuando java le da una columna(en ese caso automaticamente le manda colfecha_inicio) me retorna una celda de ese tipo
+		    @Override
+		  //método que JavaFX llama automáticamente cada vez que una celda del TableView necesita dibujarse, actualizarse, mostrar un dato, borrarse, define como se dibuja un dato en este caso la fecha en la celda
+		    protected void updateItem(LocalDate date, boolean empty) {//parametro 1 lo scada de lo que tiene setCellValueFactory de esa fila y el otro lo obtiene de si esta fuera de vision o no(lo manda java automaticamente)
+		        super.updateItem(date, empty); //contruye la celda de manera normal pero ahora con mis valores para no perder las otras funciones
+		        if (empty || date == null) {
+		            setText(null);
+		        } else {
+		            setText(formatter.format(date));//formate la fecha a lo que quiero y lo pone en la celda
+		        }
+		    }
+		});
+
+		colFechaFinal.setCellFactory(column -> new TableCell<Tarea, LocalDate>() {
+		    @Override
+		    protected void updateItem(LocalDate date, boolean empty) {
+		        super.updateItem(date, empty);
+		        if (empty || date == null) {
+		            setText(null);
+		        } else {
+		            setText(formatter.format(date));
+		        }
+		    }
+		});
 
 		colCategoria.setCellValueFactory(new PropertyValueFactory<>("categoria"));
 		colPrioridad.setCellValueFactory(new PropertyValueFactory<>("prioridad"));
