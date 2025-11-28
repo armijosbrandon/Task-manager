@@ -25,6 +25,7 @@ public class View {
 	private Button btnEditarTarea;
 	private Button btnBorrarTarea;
 	private Button btnCompletarTarea;
+	private Button btnMarcarProgresoTarea;
 	
 	private TableView<Tarea> tabla_tareas;
 	private TextField txtNombre_tarea;
@@ -64,9 +65,15 @@ public class View {
 		btnBorrarTarea.setGraphic(new FontIcon("fas-trash"));
 		btnBorrarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
+		btnMarcarProgresoTarea= new Button("Marcar como En Progreso");
+		btnMarcarProgresoTarea.setGraphic(new FontIcon("fas-circle-notch"));
+		btnMarcarProgresoTarea.setContentDisplay(ContentDisplay.RIGHT); 
+		
 		btnCompletarTarea = new Button("Completar Tarea");
 		btnCompletarTarea.setGraphic(new FontIcon("fas-check-circle"));
 		btnCompletarTarea.setContentDisplay(ContentDisplay.RIGHT);
+		
+		
 		
 		TextField txtSearch = new TextField();
 		txtSearch.setPromptText("Buscar.....");
