@@ -113,7 +113,80 @@ public class Controller {
         		view.setAlerta("Selecciona una fila para poder editar.");
         	}	
         });
+        
+        
+        view.getBtnBorrarTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+        	if(tarea_activa!=null) {
+        		if(view.getConfirmacion()) {
+            		try {
+        				model.borrarTarea(tarea_activa);
+        				tabla_tareas.refresh();
+        			} catch (SQLException e1) {
+        				view.setAlerta(
+        					    "No se pudo eliminar la tarea.\n\n" +
+        					    "Posibles causas:\n" +
+        					    "   • La base de datos está en uso por otro programa.\n" +
+        					    "   • El archivo 'TaskManager.db' está dañado.\n" +
+        					    "   • La tarea ya no existe o no pudo accederse.\n\n" +
+        					    "Recomendaciones:\n" +
+        					    "   • Cierra y vuelve a abrir la aplicación.\n" +
+        					    "   • Asegúrate de que la base de datos no esté siendo utilizada.\n\n" +
+        					    "Detalles técnicos:\n" + e1.getMessage()
+        					);
+        			}
+            	}
+        	}else {
+        		view.setAlerta("No hay ninguna fila seleccionada");
+        	}
+        	
+        	
+        });
+        
+        //Boton de marcar tarea como "en progreso"
+        view.getBtnMarcarProgresoTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+        	try {
+				model.MarcarProgresoTarea(tarea_activa);
+			} catch (SQLException e1) {
+				view.setAlerta(
+					    "No se pudo actualizar el estado de la tarea.\n\n" +
+					    "Posibles causas:\n" +
+					    "   • La base de datos está en uso por otro programa.\n" +
+					    "   • El archivo 'TaskManager.db' está dañado.\n" +
+					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
+					    "Recomendaciones:\n" +
+					    "   • Cierra y vuelve a abrir la aplicación.\n" +
+					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
+					    "Detalles técnicos:\n" + e1.getMessage()
+					);
+			}
+        	tabla_tareas.refresh();
+        });
+        
+      //Boton de marcar tarea como "Completada"
+        view.getBtnCompletarTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+        	try {
+				model.MarcarCompletaTarea(tarea_activa);
+			} catch (SQLException e1) {
+				view.setAlerta(
+					    "No se pudo actualizar el estado de la tarea.\n\n" +
+					    "Posibles causas:\n" +
+					    "   • La base de datos está en uso por otro programa.\n" +
+					    "   • El archivo 'TaskManager.db' está dañado.\n" +
+					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
+					    "Recomendaciones:\n" +
+					    "   • Cierra y vuelve a abrir la aplicación.\n" +
+					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
+					    "Detalles técnicos:\n" + e1.getMessage()
+					);
+			}
+        	tabla_tareas.refresh();
+        });
 
+        
+        //----------------------BOTONES DEL FORM-------------------
         //evento botón "Guardar Tarea" del form
         view.getBtnGuardarTarea().setOnAction(e -> {
         	obtenerElementosForm();
@@ -142,34 +215,6 @@ public class Controller {
                     "Detalles técnicos:\n" + e1.getMessage()
                 );
             }
-        });
-        
-        view.getBtnBorrarTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
-        	if(tarea_activa!=null) {
-        		if(view.getConfirmacion()) {
-            		try {
-        				model.borrarTarea(tarea_activa.getNum());
-        				tabla_tareas.refresh();
-        			} catch (SQLException e1) {
-        				view.setAlerta(
-        					    "No se pudo eliminar la tarea.\n\n" +
-        					    "Posibles causas:\n" +
-        					    "   • La base de datos está en uso por otro programa.\n" +
-        					    "   • El archivo 'TaskManager.db' está dañado.\n" +
-        					    "   • La tarea ya no existe o no pudo accederse.\n\n" +
-        					    "Recomendaciones:\n" +
-        					    "   • Cierra y vuelve a abrir la aplicación.\n" +
-        					    "   • Asegúrate de que la base de datos no esté siendo utilizada.\n\n" +
-        					    "Detalles técnicos:\n" + e1.getMessage()
-        					);
-        			}
-            	}
-        	}else {
-        		view.setAlerta("No hay ninguna fila seleccionada");
-        	}
-        	
-        	
         });
         
         //btn comfirmar cambios del form

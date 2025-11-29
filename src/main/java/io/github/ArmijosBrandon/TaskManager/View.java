@@ -26,7 +26,6 @@ public class View {
 	private Button btnBorrarTarea;
 	private Button btnCompletarTarea;
 	private Button btnMarcarProgresoTarea;
-	
 	private TableView<Tarea> tabla_tareas;
 	private TextField txtNombre_tarea;
 	private DatePicker fecha_inicio;
@@ -82,7 +81,7 @@ public class View {
 		Button btnFilterTask = new Button();
 		btnFilterTask.setGraphic(new FontIcon("fas-filter"));
 		
-		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnCompletarTarea,searchBox,btnFilterTask);
+		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnMarcarProgresoTarea,btnCompletarTarea,searchBox,btnFilterTask);
 		//CONTENEDOR TABLA DE TAREAS
 		tabla_tareas= new TableView<>();
 		tabla_tareas.setPlaceholder(new Label("Ingresa tus tareas con el boton \"Nueva tarea\""));
@@ -214,6 +213,10 @@ public class View {
 	
 	public Button getBtnBorrarTarea() {
 		return btnBorrarTarea;
+	}
+	
+	public Button getBtnMarcarProgresoTarea() {
+		return btnMarcarProgresoTarea;
 	}
 
 	public Button getBtnCompletarTarea() {

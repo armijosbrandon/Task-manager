@@ -151,19 +151,32 @@ public class Model {
 		    }
 		}
 	}
-	public void borrarTarea(int num_tarea) throws SQLException {
+	public void borrarTarea(Tarea tarea_activa) throws SQLException {
 		String sqlEliminar="Delete from Tareas where num= ?";
 		try(PreparedStatement pstmt = conn.prepareStatement(sqlEliminar)){
-			pstmt.setInt(1, num_tarea);
+			pstmt.setInt(1, tarea_activa.getNum());
 			pstmt.executeUpdate();
-			
-			for(Tarea t:lista_tareas) {
-				if(t.getNum()==num_tarea) {
-					lista_tareas.remove(t);
-					break;
-				}
-			}
-			
+			lista_tareas.remove(tarea_activa);
+		}
+		
+	}
+	public void MarcarProgresoTarea(Tarea tarea_activa) throws SQLException {
+		String sqlMarcarProgreso="update Tareas set estado= 'En progreso' where num=?";
+		try(PreparedStatement pstmt = conn.prepareStatement(sqlMarcarProgreso)){
+			pstmt.setInt(1, tarea_activa.getNum());
+			pstmt.executeUpdate();
+			tarea_activa.setEstado("En progreso");
+		}
+		
+	}
+	
+	public void MarcarCompletaTarea(Tarea tarea_activa) throws SQLException {
+		String sqlMarcarCompleta="update Tareas set estado= 'Completada' where num=?";
+		try(PreparedStatement pstmt = conn.prepareStatement(sqlMarcarCompleta)){
+			pstmt.setInt(1, tarea_activa.getNum());
+			pstmt.executeUpdate();
+
+			tarea_activa.setEstado("Completada");
 		}
 		
 	}
