@@ -3,13 +3,21 @@ package io.github.ArmijosBrandon.TaskManager;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.controlsfx.control.textfield.TextFields;
 
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
 
 public class Controller {
 	private Model model;
@@ -26,8 +34,18 @@ public class Controller {
 	private String estado;
 	private String categoria;
 	private String observacion;
-	
 	private Tarea  tarea_activa;
+	
+	
+	private FormFiltrarView formFiltrarView;
+	private Popup popupCategoria;
+	private ComboBox<String> comboCategorias;
+	private ComboBox<String> comboPrioridades;
+	private ComboBox<String> comboEstados;
+	private Set<String> categoriasSeleccionadas = new HashSet<>();//coleccion que no permite elementos repetidos
+
+
+
 	
 	public Controller(Model model, View view) {
 		this.model=model;
@@ -36,10 +54,11 @@ public class Controller {
 		inicializarConexion();//conecta a la base de datos
         inicializarTablas();//crea tablas si no existen
         cargarCategorias(); //carga las categorias comunes del usuario
-        TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
+        inicializarTareasTabla();
         inicializarFormularios();
         inicializarEventosBotones(); //cargar los eventos de los botones
-        inicializarTareasTabla();
+       
+        
         
 	}
 	
@@ -75,10 +94,18 @@ public class Controller {
                 "Detalles técnicos:\n" + e.getMessage()
             );
         }
+        TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
     }
     
     public void inicializarFormularios() {
     	 form = view.getForm();
+    	 
+    	 //Form de filtrado y sus elementos
+    	 formFiltrarView = new FormFiltrarView();
+         popupCategoria= formFiltrarView.getPopupCategoria();
+         comboCategorias= formFiltrarView.getCategoriaCbox();
+         comboPrioridades= formFiltrarView.getPrioridadCbox();
+         comboEstados=formFiltrarView.getEstadoCbox();
     }
 
 
@@ -184,19 +211,98 @@ public class Controller {
 			}
         	tabla_tareas.refresh();
         });
+        
+        
+        //boton de filtrar
+        view.getBtnFiltrarTarea().setOnAction(e->{
+        	Button btnFiltrar=view.getBtnFiltrarTarea();
+        	formFiltrarView.setAutoHide(true);//hacer que se cierre al clickear fuera de el
+        	if (!formFiltrarView.isShowing()) {//solo mostrar si no se esta mostrando, para evitar que espame el boton y salgan muchas
+        		 formFiltrarView.show(btnFiltrar,//objeto de referencia para posicion del popup
+        				 btnFiltrar.localToScreen(0, btnFiltrar.getHeight()).getX(),//0 px desde el boton en x
+        				 btnFiltrar.localToScreen(0, btnFiltrar.getHeight()).getY());
+        	    }
+        	});
+ 
+   //----------------------BOTONES DE FILTRADO-------------------
+
+
+        comboCategorias.setOnMouseClicked(e -> {
+        	// --- GUARDAR SELECCIÓNES ANTERIORES SI ES QUE HAY ANTES DE LIMPIAR ---
+        	guardarSeleccionCategorias(formFiltrarView.getContCategorias());
+
+        	// --- TOGGLE DEL POPUP ---
+        	popupCategoria.getContent().clear();
+
+        	if (popupCategoria.isShowing()) {
+        		popupCategoria.hide();
+        		return;
+        	}
+
+        	// --- ORGANIZAR CATEGORÍAS EN COLUMNAS ---
+        	HBox columnasCategorias = formFiltrarView.getContCategorias();
+        	int totalCategorias = categorias.size();
+        	int categoriasPorColumna = 5;
+
+        	// número de columnas necesarias
+        	//int math.ceil() redondea hacia arriba un resultado en decimal de una division y lo convierte a int
+        	int columnas = (int) Math.ceil((double) totalCategorias / categoriasPorColumna); //(double) totalCategorias convierte a double totalCategorias para obtener un resultado en decimal
+        	columnasCategorias.getChildren().clear();
+
+        	for (int col = 0; col < columnas; col++) {
+
+        		int desde = col * categoriasPorColumna;
+        		int hasta = Math.min(desde + categoriasPorColumna, totalCategorias);
+
+        		List<String> categoriasEnColumna = categorias.subList(desde, hasta);
+
+        		VBox columna = new VBox(5);
+
+        		for (String categoria : categoriasEnColumna) {
+        			CheckBox check = new CheckBox(categoria);
+        			check.setSelected(categoriasSeleccionadas.contains(categoria)); // Si categoriasSeleccionadas contiene esa categoria, marca al checkbox, si no , lo deja desactivado
+        			columna.getChildren().add(check);
+        		}
+
+        		columnasCategorias.getChildren().add(columna);
+        	}
+
+        	// --- MOSTRAR POPUP ---
+        	popupCategoria.getContent().add(columnasCategorias);
+        	popupCategoria.setAutoHide(true);
+        	popupCategoria.show(
+        			comboCategorias,
+        			comboCategorias.localToScreen(0, comboCategorias.getHeight()).getX(),
+        			comboCategorias.localToScreen(0, comboCategorias.getHeight()).getY()
+        			);
+        });
+        
+        comboPrioridades.setOnMouseClicked(e->{
+        	Popup popupPrioridades= formFiltrarView.getPopupPrioridades();
+        	mostrarPopupDebajo(popupPrioridades, comboPrioridades);
+        });
+        
+        comboEstados.setOnMouseClicked(e->{
+        	Popup popupEstados= formFiltrarView.getPopupEstados();
+        	mostrarPopupDebajo(popupEstados, comboEstados);
+        });
+        
+
 
         
-        //----------------------BOTONES DEL FORM-------------------
+//----------------------BOTONES DEL FORM-------------------
         //evento botón "Guardar Tarea" del form
         view.getBtnGuardarTarea().setOnAction(e -> {
         	obtenerElementosForm();
             try {
-                model.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);
+                model.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);//dentro de ese metodo si la categoria es nueva se añade
                 //si la categoria es nueva se guardara en las categorias
-                if (!categorias.contains(categoria)) {
-                    categorias.add(categoria);
+                if(!categoria.trim().isEmpty()) {
+                	if (!categorias.contains(categoria)) {
+                        categorias.add(categoria);
+                        TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias);//volvemos a vincular los valores
+                    }
                 }
-
                 form.setVisible(false);
                 form.setManaged(false);
             } catch (SQLException e1) {
@@ -338,6 +444,34 @@ public class Controller {
 		view.setTxtObservacion(tarea_activa.getObservacion());
 		
 	}
+	
+	public void mostrarPopupDebajo(Popup popup, ComboBox<String> dueño) {
+	    // Si ya está abierto → cerrarlo (toggle)
+	    if (popup.isShowing()) {
+	        popup.hide();
+	        return;
+	    }
+
+	    popup.setAutoHide(true);
+	    popup.show(dueño, dueño.localToScreen(0,dueño.getHeight()).getX(),
+	    		dueño.localToScreen(0,dueño.getHeight()).getY()
+    		);
+	}
+	
+	private void guardarSeleccionCategorias(HBox columnasCategorias) {
+	    categoriasSeleccionadas.clear();//Antes de guardar las nuevas selecciones, borra las anteriores
+	    for (Node colNode : columnasCategorias.getChildren()) {//recorro cada columna
+	        if (colNode instanceof VBox col) { //verifica que sea un vbox
+	            for (Node node : col.getChildren()) {//reccore cada checkbox
+	                if (node instanceof CheckBox cb && cb.isSelected()) {//si es un checkbox y esta seleccionado
+	                    categoriasSeleccionadas.add(cb.getText());
+	                }
+	            }
+	        }
+	    }
+	}
+
+
 	
 	//funcion para cerrar comunicacion cuando se cierra la app
 	public void close() {

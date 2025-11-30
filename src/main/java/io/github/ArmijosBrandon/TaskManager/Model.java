@@ -62,12 +62,14 @@ public class Model {
 	}
 	
 	public void agregarCategoria(String categoria) throws SQLException {
-	        String sql = "INSERT OR IGNORE INTO Categorias(nombre) VALUES(?)"; //si existe un duplicado omitira ese valor y no genera error
+		if(!categoria.trim().isEmpty()) {//trim quita espacios en blanco
+			String sql = "INSERT OR IGNORE INTO Categorias(nombre) VALUES(?)"; //si existe un duplicado omitira ese valor y no genera error
 	        try(PreparedStatement pstmt = conn.prepareStatement(sql)){
 	        	pstmt.setString(1, categoria);
 	        	pstmt.executeUpdate();
 	        }
 	        System.out.println("categoria agregada existosamente");
+		}	
 	}
 	
 	public ObservableList<Tarea> obtenerTareas() throws SQLException { 
@@ -175,7 +177,6 @@ public class Model {
 		try(PreparedStatement pstmt = conn.prepareStatement(sqlMarcarCompleta)){
 			pstmt.setInt(1, tarea_activa.getNum());
 			pstmt.executeUpdate();
-
 			tarea_activa.setEstado("Completada");
 		}
 		
