@@ -39,11 +39,15 @@ public class Controller {
 	
 	private FormFiltrarView formFiltrarView;
 	private Popup popupCategoria;
+	private Popup popupPrioridades;
+	private Popup popupEstados;
+	private HBox columnasCategorias;
 	private ComboBox<String> comboCategorias;
 	private ComboBox<String> comboPrioridades;
 	private ComboBox<String> comboEstados;
 	private Set<String> categoriasSeleccionadas = new HashSet<>();//coleccion que no permite elementos repetidos
-
+	private Set<String> prioridadesSeleccionadas = new HashSet<>();
+	private Set<String> estadosSeleccionados = new HashSet<>();
 
 
 	
@@ -106,6 +110,8 @@ public class Controller {
          comboCategorias= formFiltrarView.getCategoriaCbox();
          comboPrioridades= formFiltrarView.getPrioridadCbox();
          comboEstados=formFiltrarView.getEstadoCbox();
+         columnasCategorias = formFiltrarView.getContCategorias();
+  
     }
 
 
@@ -224,12 +230,11 @@ public class Controller {
         	    }
         	});
  
+        
    //----------------------BOTONES DE FILTRADO-------------------
-
-
         comboCategorias.setOnMouseClicked(e -> {
         	// --- GUARDAR SELECCIÓNES ANTERIORES SI ES QUE HAY ANTES DE LIMPIAR ---
-        	guardarSeleccionCategorias(formFiltrarView.getContCategorias());
+        	guardarSeleccionCategorias(columnasCategorias);
 
         	// --- TOGGLE DEL POPUP ---
         	popupCategoria.getContent().clear();
@@ -239,8 +244,7 @@ public class Controller {
         		return;
         	}
 
-        	// --- ORGANIZAR CATEGORÍAS EN COLUMNAS ---
-        	HBox columnasCategorias = formFiltrarView.getContCategorias();
+        	
         	int totalCategorias = categorias.size();
         	int categoriasPorColumna = 5;
 
@@ -260,7 +264,7 @@ public class Controller {
 
         		for (String categoria : categoriasEnColumna) {
         			CheckBox check = new CheckBox(categoria);
-        			check.setSelected(categoriasSeleccionadas.contains(categoria)); // Si categoriasSeleccionadas contiene esa categoria, marca al checkbox, si no , lo deja desactivado
+        			check.setSelected(categoriasSeleccionadas.contains(categoria)); // Si categorias Seleccionadas contiene esa categoria, marca al checkbox, si no , lo deja desactivado
         			columna.getChildren().add(check);
         		}
 
@@ -278,13 +282,46 @@ public class Controller {
         });
         
         comboPrioridades.setOnMouseClicked(e->{
-        	Popup popupPrioridades= formFiltrarView.getPopupPrioridades();
+        	popupPrioridades= formFiltrarView.getPopupPrioridades();
         	mostrarPopupDebajo(popupPrioridades, comboPrioridades);
         });
         
         comboEstados.setOnMouseClicked(e->{
-        	Popup popupEstados= formFiltrarView.getPopupEstados();
+        	popupEstados= formFiltrarView.getPopupEstados();
         	mostrarPopupDebajo(popupEstados, comboEstados);
+        });
+        
+        formFiltrarView.getBtnFiltrar().setOnAction(e->{
+        	guardarFiltrosSeleccionados(formFiltrarView.getContPrioridades(),prioridadesSeleccionadas);
+        	guardarFiltrosSeleccionados( formFiltrarView.getContEstados(), estadosSeleccionados);
+        	guardarSeleccionCategorias(formFiltrarView.getContCategorias());
+        	try {
+        		if(prioridadesSeleccionadas.isEmpty() && estadosSeleccionados.isEmpty() && categoriasSeleccionadas.isEmpty()) {
+        			tabla_tareas.getItems().clear(); //limpiamos para que no se acumulen las tablas o listas
+        			inicializarTareasTabla();
+        		}else {
+        			tabla_tareas.getItems().setAll(model.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados));
+        		}
+				
+			} catch (SQLException e1) {
+				view.setAlerta(
+					    "No se pudieron obtener las tareas filtradas desde la base de datos.\n\n" +
+					    "Posibles causas:\n" +
+					    "   • La conexión con la base de datos falló o está cerrada.\n" +
+					    "   • La consulta generada contiene errores de sintaxis.\n" +
+					    "   • Alguno de los filtros seleccionados no coincide con los valores almacenados.\n" +
+					    "   • El archivo 'TaskManager.db' está dañado o bloqueado por otro programa.\n" +
+					    "   • Existen valores nulos o inesperados en las columnas 'categoria', 'prioridad' o 'estado'.\n\n" +
+					    "Qué puedes hacer:\n" +
+					    "   • Verifica que la base de datos no esté siendo usada por otra aplicación.\n" +
+					    "   • Asegúrate de seleccionar filtros válidos.\n" +
+					    "   • Reinicia la aplicación y vuelve a intentar.\n" +
+					    "   • Si el problema persiste, elimina 'TaskManager.db' para regenerarlo.\n\n" +
+					    "Detalles técnicos:\n" + e1.getMessage()
+					);
+
+			}
+        	
         });
         
 
@@ -332,6 +369,12 @@ public class Controller {
 				form.setVisible(false);
 	            form.setManaged(false);
 	            tabla_tareas.refresh();
+	            if(!categoria.trim().isEmpty()) {
+                	if (!categorias.contains(categoria)) {
+                        categorias.add(categoria);
+                        TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias);//volvemos a vincular los valores
+                    }
+                }
         	} catch (SQLException e1) {
 				view.setAlerta(
 					    "No se pudo actualizar la tarea.\n\n" +
@@ -372,7 +415,6 @@ public class Controller {
         }
     }
 	public void inicializarTareasTabla() {
-
 		//obtener tabla con tareas actuales en la bd
 		tabla_tareas= view.getTablaTareas();
 		try {
@@ -469,6 +511,17 @@ public class Controller {
 	            }
 	        }
 	    }
+	}
+	
+	private void guardarFiltrosSeleccionados(VBox contenedor, Set<String> filtros_seleccionados) {
+		filtros_seleccionados.clear();
+		
+		for(Node node:contenedor.getChildren()) {
+			if(node instanceof CheckBox cb && cb.isSelected()) {
+				filtros_seleccionados.add(cb.getText());
+				
+			}
+		}
 	}
 
 

@@ -11,9 +11,14 @@ public class FormFiltrarView extends Popup{
 	private ComboBox<String> estadoCbox;
 	
 	private Popup popupCategorias;
-	private HBox contCategorias;
 	private Popup popupPrioridades;
 	private Popup popupEstados;
+	
+	private HBox contCategorias;
+	private VBox contPrioridades;
+	private VBox contEstados;
+	
+	private Button btnFiltrar;
 	
 	public FormFiltrarView() {
 		categoriaCbox=new ComboBox<>();
@@ -36,7 +41,7 @@ public class FormFiltrarView extends Popup{
 		CheckBox p1= new CheckBox("Alta");
 		CheckBox p2= new CheckBox("Media");
 		CheckBox p3= new CheckBox("Baja");
-		VBox contPrioridades=new VBox(5,p1,p2,p3);
+		contPrioridades=new VBox(5,p1,p2,p3);
 		popupPrioridades.getContent().add(contPrioridades);
 		
 		
@@ -49,23 +54,24 @@ public class FormFiltrarView extends Popup{
 		CheckBox e1= new CheckBox("Pendiente");
 		CheckBox e2= new CheckBox("En progreso");
 		CheckBox e3= new CheckBox("Completada");
-		VBox contEstados=new VBox(5,e1,e2,e3);
-		popupEstados.getContent().add(contEstados);
+		contEstados=new VBox(5,e1,e2,e3);
+		popupEstados.getContent().add(getContEstados());
 		
-		Button btnFiltrar= new Button("Filtrar");
+		btnFiltrar= new Button("Filtrar");
 		btnFiltrar.setGraphic(new FontIcon("fas-filter"));
 		HBox contenedorPickers= new HBox(categoria,prioridad,estado);
-		VBox contenedorPopup= new VBox(10,contenedorPickers,btnFiltrar);
+		VBox contenedorPopup= new VBox(10,contenedorPickers,getBtnFiltrar());
 		this.getContent().add(contenedorPopup);
 	}
+	
+	public ComboBox<String> getCategoriaCbox() { return categoriaCbox; }
+	public ComboBox<String> getPrioridadCbox() { return prioridadCbox; }
+	public ComboBox<String> getEstadoCbox() { return estadoCbox; }
+
 	
 	//-------------METODOS CONSTRUCTORES DE LOS POPUPS DE CADA COMBOBOX--------------//
 	public Popup getPopupCategoria() {
 		return popupCategorias;	
-	}
-	
-	public HBox getContCategorias() {
-		return contCategorias;
 	}
 	
 	public Popup getPopupPrioridades() {
@@ -76,10 +82,27 @@ public class FormFiltrarView extends Popup{
 		return popupEstados;	
 	}
 	
+	//-------------METODOS PARA OBTENER LOS CHECKBOX DE CADA COMBOBOX--------------//
+	
+	public HBox getContCategorias() {
+		return contCategorias;
+	}
+	
+	public VBox getContPrioridades() {
+		return contPrioridades;
+	}
+	
+	public VBox getContEstados() {
+		return contEstados;
+	}
+	
+	
+	
 
-	public ComboBox<String> getCategoriaCbox() { return categoriaCbox; }
-	public ComboBox<String> getPrioridadCbox() { return prioridadCbox; }
-	public ComboBox<String> getEstadoCbox() { return estadoCbox; }
+
+	public Button getBtnFiltrar() {
+		return btnFiltrar;
+	}
 
 
 

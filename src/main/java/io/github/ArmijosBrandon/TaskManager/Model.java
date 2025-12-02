@@ -6,6 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -151,6 +154,7 @@ public class Model {
 		            break; //salir en cuando encontremos nuestra tarea
 		        }
 		    }
+			agregarCategoria(categoria);
 		}
 	}
 	public void borrarTarea(Tarea tarea_activa) throws SQLException {
@@ -181,6 +185,79 @@ public class Model {
 		}
 		
 	}
-
 	
+
+	public ObservableList<Tarea> filtrarTabla(Set<String> categoriasSeleccionadas, Set<String> prioridadesSeleccionadas,Set<String> estadosSeleccionados) throws SQLException {
+		StringBuilder sql = new StringBuilder("SELECT * FROM Tareas WHERE "); //para poder modificar mi consulta
+	    List<String> condiciones = new ArrayList<>();//las condiciones que va a tener mi consulta
+	    ObservableList<Tarea> tareas_obtenidas= FXCollections.observableArrayList();
+
+	    // Categorías
+	    if (!categoriasSeleccionadas.isEmpty()) {
+	        String placeholders = String.join(", ",//une todo con comas, resultado obtenido "?,?.....,?"
+	                categoriasSeleccionadas.stream().map(c -> "?").toList());
+	        		//stream(), comvierte una lista en un stream: me permite aplicar filtros, cambiar valores, etc a cada elemento de la lista que al final lo devuelvo como un resultado, como un for pero mas corto
+	        		//map transforma todas las categorias del stream en "? y por ultimo .toList() me retorna el stream nuevo en lista
+	        
+	        condiciones.add("categoria IN (" + placeholders + ")"); //se obtiene algo como categoria in(?,?.....,?)
+	    }
+
+	    // Prioridades
+	    if (!prioridadesSeleccionadas.isEmpty()) {
+	        String placeholders = String.join(", ",
+	                prioridadesSeleccionadas.stream().map(p -> "?").toList());
+	        condiciones.add("prioridad IN (" + placeholders + ")");
+	    }
+
+	    // Estados
+	    if (!estadosSeleccionados.isEmpty()) {
+	        String placeholders = String.join(", ",
+	                estadosSeleccionados.stream().map(e -> "?").toList());
+	        condiciones.add("estado IN (" + placeholders + ")");
+	    }
+	    
+
+	    sql.append(String.join(" AND ", condiciones));//separa cada condicion con un and para que filtre y cumple segun todas las condiciones, cada IN usa un or interno
+	    
+	    PreparedStatement pstmt= conn.prepareStatement(sql.toString());
+	    int index=1;
+	    //categorias
+	    for(String categoria:categoriasSeleccionadas) {
+	    	pstmt.setString(index, categoria);
+	    	index++;
+	    }
+
+	    for(String prioridad:prioridadesSeleccionadas) {
+	    	pstmt.setString(index, prioridad);
+	    	index++;
+	    }
+
+	    for(String estado:estadosSeleccionados) {
+	    	pstmt.setString(index, estado);
+	    	index++;
+	    }
+
+	    ResultSet rs= pstmt.executeQuery(); //primer tengo que tener creado el pstmt
+	    while (rs.next()) {
+        	String strFecha_inicio= rs.getString("fecha_inicio");
+        	String strFecha_final= rs.getString("fecha_final");
+        	LocalDate fecha_inicio = (strFecha_inicio !=null && !strFecha_inicio.isEmpty())?LocalDate.parse(strFecha_inicio):null; //localdate.parse no permite valores null
+        	LocalDate fecha_final = (strFecha_final!=null&& !strFecha_final.isEmpty())?LocalDate.parse(strFecha_final):null;
+        	tareas_obtenidas.add(new Tarea(
+                    rs.getInt("num"),
+                    rs.getString("tarea_nombre"),
+                    fecha_inicio,
+                    fecha_final,
+                    rs.getString("categoria"),
+                    rs.getString("prioridad"),
+                    rs.getString("estado"),
+                    rs.getString("observacion")         
+            ));
+        }
+
+	    rs.close();
+	    pstmt.close();
+
+	    return tareas_obtenidas; // nueva lista independiente
+	}
 }
