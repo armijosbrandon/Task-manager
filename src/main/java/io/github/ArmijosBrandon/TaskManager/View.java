@@ -42,6 +42,10 @@ public class View {
 	private Button btnConfirmarCambios;
 	private Button btnGuardarTarea;
 	private Button btnCancelar;
+	
+	//btns para gestionar  datos de prueba
+	private Button btnCargarDatosPrueba;
+	private Button btnResetearDatos;;
 
 	private VBox form;
 	
@@ -149,6 +153,8 @@ public class View {
 			    colEstado,
 			    colObservacion
 		);
+		
+		//-------DATOS DE PRUEBA---------------------------
 		
 		
 		
@@ -302,6 +308,14 @@ public class View {
 		return btnCancelar;
 	}
 	
+	public Button getBtnCargarDatosPrueba() {
+		return btnCargarDatosPrueba;
+	}
+
+	public Button getBtnResetearDatos() {
+		return btnResetearDatos;
+	}
+
 	public VBox getForm() {
 		return form;
 		

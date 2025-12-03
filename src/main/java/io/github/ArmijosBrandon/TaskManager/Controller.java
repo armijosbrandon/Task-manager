@@ -180,44 +180,52 @@ public class Controller {
         
         //Boton de marcar tarea como "en progreso"
         view.getBtnMarcarProgresoTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
-        	try {
-				model.MarcarProgresoTarea(tarea_activa);
-			} catch (SQLException e1) {
-				view.setAlerta(
-					    "No se pudo actualizar el estado de la tarea.\n\n" +
-					    "Posibles causas:\n" +
-					    "   • La base de datos está en uso por otro programa.\n" +
-					    "   • El archivo 'TaskManager.db' está dañado.\n" +
-					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
-					    "Recomendaciones:\n" +
-					    "   • Cierra y vuelve a abrir la aplicación.\n" +
-					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
-					    "Detalles técnicos:\n" + e1.getMessage()
-					);
-			}
-        	tabla_tareas.refresh();
+        	if(tarea_activa!=null) {
+	        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+	        	try {
+					model.MarcarProgresoTarea(tarea_activa);
+				} catch (SQLException e1) {
+					view.setAlerta(
+						    "No se pudo actualizar el estado de la tarea.\n\n" +
+						    "Posibles causas:\n" +
+						    "   • La base de datos está en uso por otro programa.\n" +
+						    "   • El archivo 'TaskManager.db' está dañado.\n" +
+						    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
+						    "Recomendaciones:\n" +
+						    "   • Cierra y vuelve a abrir la aplicación.\n" +
+						    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
+						    "Detalles técnicos:\n" + e1.getMessage()
+						);
+				}
+	        	tabla_tareas.refresh();
+        	}else {
+        		view.setAlerta("No hay ninguna fila seleccionada");
+        	}
         });
         
       //Boton de marcar tarea como "Completada"
         view.getBtnCompletarTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
-        	try {
-				model.MarcarCompletaTarea(tarea_activa);
-			} catch (SQLException e1) {
-				view.setAlerta(
-					    "No se pudo actualizar el estado de la tarea.\n\n" +
-					    "Posibles causas:\n" +
-					    "   • La base de datos está en uso por otro programa.\n" +
-					    "   • El archivo 'TaskManager.db' está dañado.\n" +
-					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
-					    "Recomendaciones:\n" +
-					    "   • Cierra y vuelve a abrir la aplicación.\n" +
-					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
-					    "Detalles técnicos:\n" + e1.getMessage()
-					);
-			}
-        	tabla_tareas.refresh();
+        	if(tarea_activa!=null) {
+	        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+	        	try {
+					model.MarcarCompletaTarea(tarea_activa);
+				} catch (SQLException e1) {
+					view.setAlerta(
+						    "No se pudo actualizar el estado de la tarea.\n\n" +
+						    "Posibles causas:\n" +
+						    "   • La base de datos está en uso por otro programa.\n" +
+						    "   • El archivo 'TaskManager.db' está dañado.\n" +
+						    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
+						    "Recomendaciones:\n" +
+						    "   • Cierra y vuelve a abrir la aplicación.\n" +
+						    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
+						    "Detalles técnicos:\n" + e1.getMessage()
+						);
+				}
+	        	tabla_tareas.refresh();
+        	}else {
+        		view.setAlerta("No hay ninguna fila seleccionada");
+        	}
         });
         
         
@@ -327,38 +335,11 @@ public class Controller {
         
 
 //----------------------BOTON DE BUSQUEDA-------------------
+        view.getTxtBusqueda().setOnAction(e->{
+        	buscarTareas();
+        });
         view.getBtnBusqueda().setOnAction(e->{
-        	String txtBusqueda= view.getTxtBusqueda().getText();
-        	try {
-        		if(txtBusqueda.trim().isEmpty()) {
-        			tabla_tareas.getItems().clear();
-        			inicializarTareasTabla();
-        		}else {
-        			ObservableList<Tarea> tareas_buscadas = model.buscarTareas(txtBusqueda);
-        			if (!tareas_buscadas.isEmpty()) {
-        			    tabla_tareas.getItems().setAll(tareas_buscadas);
-        			} else {
-        			    tabla_tareas.setPlaceholder(new Label("No hay resultados."));
-        			    tabla_tareas.getItems().clear(); // opcional
-        			}
-
-        		}
-				
-			} catch (SQLException e1) {
-				view.setAlerta(
-					    "No se pudieron obtener las tareas buscadas desde la base de datos.\n\n" +
-					    "Posibles causas:\n" +
-					    "   • La conexión con la base de datos falló o está cerrada.\n" +
-					    "   • El archivo 'TaskManager.db' está dañado o bloqueado por otro programa.\n" +
-					    "   • Existen valores nulos o inesperados en el campo de busqueda" +
-					    "Qué puedes hacer:\n" +
-					    "   • Verifica que la base de datos no esté siendo usada por otra aplicación.\n" +
-					    "   • Asegúrate de seleccionar criterios de busqueda válidos.\n" +
-					    "   • Reinicia la aplicación y vuelve a intentar.\n" +
-					    "   • Si el problema persiste, elimina 'TaskManager.db' para regenerarlo.\n\n" +
-					    "Detalles técnicos:\n" + e1.getMessage()
-					);
-			}
+        	buscarTareas();
         });
 
 
@@ -435,6 +416,41 @@ public class Controller {
             form.setManaged(false);
         });
     }
+
+	private void buscarTareas() {
+		String txtBusqueda= view.getTxtBusqueda().getText();
+    	try {
+    		if(txtBusqueda.trim().isEmpty()) {
+    			tabla_tareas.getItems().clear();
+    			inicializarTareasTabla();
+    		}else {
+    			ObservableList<Tarea> tareas_buscadas = model.buscarTareas(txtBusqueda);
+    			if (!tareas_buscadas.isEmpty()) {
+    			    tabla_tareas.getItems().setAll(tareas_buscadas);
+    			} else {
+    			    tabla_tareas.setPlaceholder(new Label("No hay resultados."));
+    			    tabla_tareas.getItems().clear(); // opcional
+    			}
+
+    		}
+			
+		} catch (SQLException e1) {
+			view.setAlerta(
+				    "No se pudieron obtener las tareas buscadas desde la base de datos.\n\n" +
+				    "Posibles causas:\n" +
+				    "   • La conexión con la base de datos falló o está cerrada.\n" +
+				    "   • El archivo 'TaskManager.db' está dañado o bloqueado por otro programa.\n" +
+				    "   • Existen valores nulos o inesperados en el campo de busqueda" +
+				    "Qué puedes hacer:\n" +
+				    "   • Verifica que la base de datos no esté siendo usada por otra aplicación.\n" +
+				    "   • Asegúrate de seleccionar criterios de busqueda válidos.\n" +
+				    "   • Reinicia la aplicación y vuelve a intentar.\n" +
+				    "   • Si el problema persiste, elimina 'TaskManager.db' para regenerarlo.\n\n" +
+				    "Detalles técnicos:\n" + e1.getMessage()
+				);
+		}
+		
+	}
 
 	private void inicializarConexion() {
         try {
