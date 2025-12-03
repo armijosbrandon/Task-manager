@@ -53,6 +53,46 @@ public class Model {
 	   System.out.println("tabla categorias creada correctamente");
 	}
 	
+	public void CrearTablaBusqueda() throws SQLException {
+
+		//tabla virutal: tabla que usa modulos especiales para funciones especificas,  en este caso usa el módulo FTS5 para buscar texto
+		//fts5 es un motor de busqueda de texto para encontrar palabras dentro de textos largos similar a un indice fulltext en sql que se aplicara en las dos columnas dadas
+		// tokenize='porter' le indica al motor que use el algoritmo Porter Stemmer, que sirve para reducir las palabras a su raíz.
+		// crea índices especiales para búsquedas por prefijo de 2,3 y 4 letras
+		String sqlCreacionTablaBusqueda =
+				"CREATE VIRTUAL TABLE IF NOT EXISTS Tareas_fts USING fts5(tarea_nombre, observacion, prefix='2 3 4' ,tokenize='porter');"; 
+
+		//-------TRIGERS PARA QUE COINCIDAN LOS DATOS DE LA TABLA VIRTUAL DE MI TABLA NORMAL TAREAS
+		String sqlTriggerNuevaTarea =
+				"CREATE TRIGGER IF NOT EXISTS tgr_nueva_tarea AFTER INSERT ON Tareas " + // trigger que se aplica sobre la tabla tareas despues de insertar
+						"BEGIN " + 
+						"INSERT INTO Tareas_fts(rowid, tarea_nombre, observacion) " + // rowid es un valor que tiene por defecto cada tabla, por eso no lo declaro
+						"VALUES (new.num, new.tarea_nombre, new.observacion);" + //new.num es el num de la nueva fila que se acaba de registrar
+						"END;";
+
+		String sqlTriggerEditarTarea =
+				"CREATE TRIGGER IF NOT EXISTS tgr_editar_tarea AFTER UPDATE ON Tareas " +
+						"BEGIN " +
+						"UPDATE Tareas_fts SET tarea_nombre = new.tarea_nombre, observacion = new.observacion " + 
+						"WHERE rowid = old.num;" + //donde el id por defecto de la tabla coincida con la fila eliminada
+						"END;";
+
+		String sqlTriggerEliminarTarea =
+				"CREATE TRIGGER IF NOT EXISTS tgr_eliminar_tarea AFTER DELETE ON Tareas " +
+						"BEGIN " +
+						"DELETE FROM Tareas_fts WHERE rowid = old.num;" +
+						"END;";
+		
+		try (Statement stmt = conn.createStatement()) {
+		    stmt.execute(sqlCreacionTablaBusqueda);
+		    stmt.execute(sqlTriggerNuevaTarea);
+		    stmt.execute(sqlTriggerEditarTarea);
+		    stmt.execute(sqlTriggerEliminarTarea);
+		}
+
+	}
+
+	
 	public ObservableList<String> obtenerCategorias() throws SQLException {
         ObservableList<String> categorias = FXCollections.observableArrayList();
         ResultSet rs = conn.createStatement().executeQuery("SELECT nombre FROM Categorias");
@@ -237,7 +277,7 @@ public class Model {
 	    	index++;
 	    }
 
-	    ResultSet rs= pstmt.executeQuery(); //primer tengo que tener creado el pstmt
+	    ResultSet rs= pstmt.executeQuery(); //primer tengo que tener creado el pstmt  con los datos ya inyectados
 	    while (rs.next()) {
         	String strFecha_inicio= rs.getString("fecha_inicio");
         	String strFecha_final= rs.getString("fecha_final");
@@ -260,4 +300,42 @@ public class Model {
 
 	    return tareas_obtenidas; // nueva lista independiente
 	}
+	public ObservableList<Tarea> buscarTareas(String txtBusqueda) throws SQLException {
+		
+		ObservableList<Tarea> tareas_buscadas= FXCollections.observableArrayList();
+		String busqueda =
+				"SELECT t.* "+
+				"FROM Tareas t "+
+				"JOIN Tareas_fts tf ON t.num = tf.rowid "+
+				"WHERE Tareas_fts MATCH ?;"
+				+ "";
+		PreparedStatement pstmt=conn.prepareStatement(busqueda);
+		pstmt.setString(1, txtBusqueda+"*"); //"*" activa la busqueda por prefijo o similares
+		
+		ResultSet rs= pstmt.executeQuery();
+		
+		while(rs.next()) {
+			String strFecha_inicio= rs.getString("fecha_inicio");
+			String strFecha_final= rs.getString("fecha_final");
+			LocalDate fecha_inicio= (strFecha_inicio !=null && !strFecha_inicio.isEmpty())? LocalDate.parse(strFecha_inicio):null;
+			LocalDate fecha_final=(strFecha_final!=null && !strFecha_final.isEmpty())? LocalDate.parse(strFecha_final):null;
+			
+			tareas_buscadas.add(new Tarea(
+                    rs.getInt("num"),
+                    rs.getString("tarea_nombre"),
+                    fecha_inicio,
+                    fecha_final,
+                    rs.getString("categoria"),
+                    rs.getString("prioridad"),
+                    rs.getString("estado"),
+                    rs.getString("observacion")         
+            ));
+		}
+		rs.close();
+		pstmt.close();
+		
+		return tareas_buscadas;
+	}
+	
+	
 }

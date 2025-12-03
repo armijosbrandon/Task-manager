@@ -1,5 +1,6 @@
 package io.github.ArmijosBrandon.TaskManager;
 
+import java.awt.TextField;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -71,6 +73,7 @@ public class Controller {
         try {
             model.crearTablaTareas();
             model.crearTablaCategorias();
+            model.CrearTablaBusqueda();
         } catch (SQLException e) {
             view.setAlerta(
                 "No se pudo crear/verificar la tabla de tareas.\n\n" +
@@ -120,7 +123,6 @@ public class Controller {
         
     	Button btnGuardarTarea= view.getBtnGuardarTarea();
     	Button btnComfirmarCambios= view.getBtnConfirmarCambios();
-    	view.getBtnConfirmarCambios();
         //evento botón "Nueva Tarea"
         view.getBtnNuevaTarea().setOnAction(e -> {
         	resetearForm();
@@ -297,9 +299,10 @@ public class Controller {
         	guardarSeleccionCategorias(formFiltrarView.getContCategorias());
         	try {
         		if(prioridadesSeleccionadas.isEmpty() && estadosSeleccionados.isEmpty() && categoriasSeleccionadas.isEmpty()) {
-        			tabla_tareas.getItems().clear(); //limpiamos para que no se acumulen las tablas o listas
+        			tabla_tareas.getItems().clear(); //limpiamos para que no se acumule la lista de las tareas obtenidas con las de la tabla original
         			inicializarTareasTabla();
         		}else {
+        			//OJO, getItems().setAll() solo remplaza el contenido actual de la tabla por una nueva lista o datos, mas no cambia la lista original "lista_tareas " vinculada a la tabla, por lo que las operaciones que se hagan, afectan a la lista original
         			tabla_tareas.getItems().setAll(model.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados));
         		}
 				
@@ -308,7 +311,6 @@ public class Controller {
 					    "No se pudieron obtener las tareas filtradas desde la base de datos.\n\n" +
 					    "Posibles causas:\n" +
 					    "   • La conexión con la base de datos falló o está cerrada.\n" +
-					    "   • La consulta generada contiene errores de sintaxis.\n" +
 					    "   • Alguno de los filtros seleccionados no coincide con los valores almacenados.\n" +
 					    "   • El archivo 'TaskManager.db' está dañado o bloqueado por otro programa.\n" +
 					    "   • Existen valores nulos o inesperados en las columnas 'categoria', 'prioridad' o 'estado'.\n\n" +
@@ -319,11 +321,45 @@ public class Controller {
 					    "   • Si el problema persiste, elimina 'TaskManager.db' para regenerarlo.\n\n" +
 					    "Detalles técnicos:\n" + e1.getMessage()
 					);
-
 			}
         	
         });
         
+
+//----------------------BOTON DE BUSQUEDA-------------------
+        view.getBtnBusqueda().setOnAction(e->{
+        	String txtBusqueda= view.getTxtBusqueda().getText();
+        	try {
+        		if(txtBusqueda.trim().isEmpty()) {
+        			tabla_tareas.getItems().clear();
+        			inicializarTareasTabla();
+        		}else {
+        			ObservableList<Tarea> tareas_buscadas = model.buscarTareas(txtBusqueda);
+        			if (!tareas_buscadas.isEmpty()) {
+        			    tabla_tareas.getItems().setAll(tareas_buscadas);
+        			} else {
+        			    tabla_tareas.setPlaceholder(new Label("No hay resultados."));
+        			    tabla_tareas.getItems().clear(); // opcional
+        			}
+
+        		}
+				
+			} catch (SQLException e1) {
+				view.setAlerta(
+					    "No se pudieron obtener las tareas buscadas desde la base de datos.\n\n" +
+					    "Posibles causas:\n" +
+					    "   • La conexión con la base de datos falló o está cerrada.\n" +
+					    "   • El archivo 'TaskManager.db' está dañado o bloqueado por otro programa.\n" +
+					    "   • Existen valores nulos o inesperados en el campo de busqueda" +
+					    "Qué puedes hacer:\n" +
+					    "   • Verifica que la base de datos no esté siendo usada por otra aplicación.\n" +
+					    "   • Asegúrate de seleccionar criterios de busqueda válidos.\n" +
+					    "   • Reinicia la aplicación y vuelve a intentar.\n" +
+					    "   • Si el problema persiste, elimina 'TaskManager.db' para regenerarlo.\n\n" +
+					    "Detalles técnicos:\n" + e1.getMessage()
+					);
+			}
+        });
 
 
         
@@ -418,7 +454,8 @@ public class Controller {
 		//obtener tabla con tareas actuales en la bd
 		tabla_tareas= view.getTablaTareas();
 		try {
-			tabla_tareas.setItems(model.obtenerTareas());//cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
+			//vincula una lista para la tabla donde va a cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
+			tabla_tareas.setItems(model.obtenerTareas());//ademas establece la lista a la que se la va a aplciar los cambios realizados en la tabla
 		} catch (SQLException e) {
 			 view.setAlerta(
 		                "No se pudieron cargar las tareas desde la base de datos.\n\n" +

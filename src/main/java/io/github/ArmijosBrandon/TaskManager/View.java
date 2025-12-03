@@ -28,6 +28,9 @@ public class View {
 	private Button btnMarcarProgresoTarea;
 	private Button btnFiltrarTarea;
 	private TableView<Tarea> tabla_tareas;
+	private Button btnBusqueda;
+	private TextField txtBusqueda;
+	//elementos del form
 	private TextField txtNombre_tarea;
 	private DatePicker fecha_inicio;
 	private DatePicker fecha_final;
@@ -74,16 +77,16 @@ public class View {
 		btnCompletarTarea.setGraphic(new FontIcon("fas-check-circle"));
 		btnCompletarTarea.setContentDisplay(ContentDisplay.RIGHT);
 		
+		txtBusqueda = new TextField();
+		txtBusqueda.setPromptText("Buscar.....");
+		btnBusqueda= new Button();
+		btnBusqueda.setGraphic( new FontIcon("fas-search"));
+		HBox busquedaBox = new HBox(txtBusqueda,btnBusqueda);
 		
-		
-		TextField txtSearch = new TextField();
-		txtSearch.setPromptText("Buscar.....");
-		HBox searchBox = new HBox(txtSearch, new FontIcon("fas-search"));
-		
-		btnFiltrarTarea = new Button();
+		btnFiltrarTarea = new Button("Filtrar por ");
 		btnFiltrarTarea.setGraphic(new FontIcon("fas-filter"));
 		
-		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnMarcarProgresoTarea,btnCompletarTarea,searchBox,btnFiltrarTarea);
+		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnMarcarProgresoTarea,btnCompletarTarea,busquedaBox,btnFiltrarTarea);
 		//CONTENEDOR TABLA DE TAREAS
 		tabla_tareas= new TableView<>();
 		tabla_tareas.setPlaceholder(new Label("Ingresa tus tareas con el boton \"Nueva tarea\""));
@@ -227,6 +230,14 @@ public class View {
 	
 	public Button getBtnFiltrarTarea() {
 		return btnFiltrarTarea;
+	}
+
+	public Button getBtnBusqueda() {
+		return btnBusqueda;
+	}
+
+	public TextField getTxtBusqueda() {
+		return txtBusqueda;
 	}
 
 	public TextField getTxtNombre_tarea() {
