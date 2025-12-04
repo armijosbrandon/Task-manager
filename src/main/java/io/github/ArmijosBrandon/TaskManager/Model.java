@@ -46,11 +46,48 @@ public class Model {
 	
 	public void crearTablaCategorias() throws SQLException {
 		String sql ="CREATE TABLE IF NOT EXISTS Categorias (nombre text primary key);";
+		
+		// --- TRIGGER: Insertar categoría automáticamente al crear nueva tarea
+		String sqlTriggerInsertCategoria =
+		    "CREATE TRIGGER IF NOT EXISTS tgr_insert_categoria " + 
+		    "AFTER INSERT ON Tareas " +
+		    "WHEN NEW.categoria IS NOT NULL AND NEW.categoria <> '' " +
+		    "BEGIN " +
+		        "INSERT OR IGNORE INTO Categorias(nombre) VALUES (NEW.categoria); " + //ignora si no existe
+		    "END;";
+
+		// --- TRIGGER: Actualizar categorías cuando se edita la tarea
+		String sqlTriggerUpdateCategoria =
+		    "CREATE TRIGGER IF NOT EXISTS tgr_update_categoria " +
+		    "AFTER UPDATE OF categoria ON Tareas " + // cuando cambia la columna categoria en tareas
+		    "BEGIN " +
+		        // Agregar la categoría nueva si no existía
+		        "INSERT OR IGNORE INTO Categorias(nombre) VALUES (NEW.categoria); " +
+
+		        // Si nadie usa ya la categoría anterior entonces eliminarla
+		        "DELETE FROM Categorias " +
+		        "WHERE nombre = OLD.categoria " +
+		        "AND NOT EXISTS (SELECT 1 FROM Tareas WHERE categoria = OLD.categoria); " + //borra donde este la antigua cateogira y si y solo si  ya no existe 1 registro con esa categoria
+		    "END;";
+
+		// --- TRIGGER: Eliminar categoría automáticamente si ya no tiene tareas asociadas
+		String sqlTriggerDeleteCategoria =
+		    "CREATE TRIGGER IF NOT EXISTS tgr_delete_categoria " +
+		    "AFTER DELETE ON Tareas " +
+		    "BEGIN " +
+		        "DELETE FROM Categorias " +
+		        "WHERE nombre = OLD.categoria " +
+		        "AND NOT EXISTS (SELECT 1 FROM Tareas WHERE categoria = OLD.categoria); " +
+		    "END;";
+
    
-	   try (Statement stmt = conn.createStatement()) {
+		try (Statement stmt = conn.createStatement()) {
 	       stmt.execute(sql);
-	   }
-	   System.out.println("tabla categorias creada correctamente");
+	       stmt.execute(sqlTriggerInsertCategoria);
+	       stmt.execute(sqlTriggerUpdateCategoria);
+	       stmt.execute(sqlTriggerDeleteCategoria);
+		}
+	 
 	}
 	
 	public void CrearTablaBusqueda() throws SQLException {
@@ -104,16 +141,7 @@ public class Model {
         return categorias;
 	}
 	
-	public void agregarCategoria(String categoria) throws SQLException {
-		if(!categoria.trim().isEmpty()) {//trim quita espacios en blanco
-			String sql = "INSERT OR IGNORE INTO Categorias(nombre) VALUES(?)"; //si existe un duplicado omitira ese valor y no genera error
-	        try(PreparedStatement pstmt = conn.prepareStatement(sql)){
-	        	pstmt.setString(1, categoria);
-	        	pstmt.executeUpdate();
-	        }
-	        System.out.println("categoria agregada existosamente");
-		}	
-	}
+	
 	
 	public ObservableList<Tarea> obtenerTareas() throws SQLException { 
 	    String sql = "SELECT num, tarea_nombre, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion FROM Tareas";
@@ -136,7 +164,6 @@ public class Model {
 	                    rs.getString("observacion")         
 	            ));
 	        }
-	        System.out.println("tareas cargadas exitosamente");
 	    }
 	    return lista_tareas;
 	}
@@ -164,7 +191,6 @@ public class Model {
 						num_tarea=rs.getInt(1);//obtiene el primer registro que es el ultimo num ingresado
 					}
 				}
-			agregarCategoria(categoria);
 		}
 		lista_tareas.add(new Tarea(num_tarea,tarea_nombre,fecha_inicio,fecha_final, categoria, prioridad, estado, observacion));
 	}
@@ -194,7 +220,6 @@ public class Model {
 		            break; //salir en cuando encontremos nuestra tarea
 		        }
 		    }
-			agregarCategoria(categoria);
 		}
 	}
 	public void borrarTarea(Tarea tarea_activa) throws SQLException {
@@ -336,6 +361,15 @@ public class Model {
 		
 		return tareas_buscadas;
 	}
-	
+	public void borrarTareas() throws SQLException { 
+	    String borrarTareas = "DELETE FROM Tareas;"; //SQLite no soporta truncate, por eso uso delate para borrar todos los datos
+	    String reiniciarIDs= "DELETE FROM sqlite_sequence;";
+
+	    try (Statement stmt = conn.createStatement()) {
+	        stmt.execute(borrarTareas);
+	        stmt.execute(reiniciarIDs);
+	    }
+	}
+
 	
 }

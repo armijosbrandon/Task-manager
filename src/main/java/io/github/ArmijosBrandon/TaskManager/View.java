@@ -16,6 +16,8 @@ import java.util.Optional;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import com.sun.javafx.scene.traversal.Direction;
+
 
 
 public class View {
@@ -44,8 +46,8 @@ public class View {
 	private Button btnCancelar;
 	
 	//btns para gestionar  datos de prueba
-	private Button btnCargarDatosPrueba;
-	private Button btnResetearDatos;;
+	private Button btnCargarTareasPrueba;
+	private Button btnResetearTareas;;
 
 	private VBox form;
 	
@@ -155,10 +157,16 @@ public class View {
 		);
 		
 		//-------DATOS DE PRUEBA---------------------------
+		btnCargarTareasPrueba= new Button("Cargar Tareas de Prueba");
+		btnCargarTareasPrueba.setGraphic(new FontIcon("fas-file-download"));
+		btnCargarTareasPrueba.setContentDisplay(ContentDisplay.RIGHT);
+		btnResetearTareas= new Button("Resetear Lista de Tareas");
+		btnResetearTareas.setGraphic(new FontIcon("fas-trash-restore"));
+		btnResetearTareas.setContentDisplay(ContentDisplay.RIGHT);
+		HBox conBotonesPrueba= new HBox(btnCargarTareasPrueba,btnResetearTareas);
 		
 		
-		
-		VBox pantallaPrincipal= new VBox(10,contTitulo,contBotones,tabla_tareas);
+		VBox pantallaPrincipal= new VBox(10,contTitulo,contBotones,tabla_tareas,conBotonesPrueba);
 		
 		//formulario de nueva tarea
 		form= form();
@@ -308,12 +316,12 @@ public class View {
 		return btnCancelar;
 	}
 	
-	public Button getBtnCargarDatosPrueba() {
-		return btnCargarDatosPrueba;
+	public Button getBtnCargarTareasPrueba() {
+		return btnCargarTareasPrueba;
 	}
 
-	public Button getBtnResetearDatos() {
-		return btnResetearDatos;
+	public Button getBtnResetearTareas() {
+		return btnResetearTareas;
 	}
 
 	public VBox getForm() {
@@ -329,11 +337,11 @@ public class View {
 		alerta.showAndWait();
 	}
 	
-	public Boolean getConfirmacion() {
+	public Boolean getConfirmacion(String header, String content) {
 		Alert alerta = new Alert(AlertType.CONFIRMATION);
 		alerta.setTitle("Confirmacion");
-		alerta.setHeaderText("¿Estas seguro de eliminar esta tarea?"); 
-		alerta.setContentText("Se eliminara esta tarea permamentemente");
+		alerta.setHeaderText(header); 
+		alerta.setContentText(content);
 		
 		Optional<ButtonType> result = alerta.showAndWait(); // me devolvera el boton que haiga presionado el usuario, Optional es un contenedor que puede tener un valor o estar vacío. En este caso, normalmente tendrá un botón, pero JavaFX lo usa para evitar errores si la ventana se cierra de forma inesperada.
 		if (result.isPresent() && result.get() == ButtonType.OK) { //is present sera verdadero si hay algo en el optional

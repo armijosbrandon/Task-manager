@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
 import javafx.collections.ObservableList;
@@ -26,6 +27,7 @@ public class Controller {
 	private View view;
 	private TableView<Tarea> tabla_tareas;
 	private ObservableList<String> categorias = null;
+	private AutoCompletionBinding<String> autoCategoria; //guarda la instacia(lista_sugerencias) actal de autocompletado de un TextFields.bindAutoCompletion()
 	private VBox form;
 	//elementos del form
 	private int num_tarea;
@@ -88,6 +90,12 @@ public class Controller {
     private void cargarCategorias() {
         try {
             categorias = model.obtenerCategorias();
+            
+            //para cambiar las sugerencias del autcompletado primero tengo que eliminar las anteriores
+            if (autoCategoria != null) {// si no es null
+                autoCategoria.dispose();//se destruye 
+            }
+            autoCategoria =TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
         } catch (SQLException e) {
             view.setAlerta(
                 "No se pudieron cargar las categorías desde la base de datos.\n\n" +
@@ -101,7 +109,7 @@ public class Controller {
                 "Detalles técnicos:\n" + e.getMessage()
             );
         }
-        TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
+        
     }
     
     public void inicializarFormularios() {
@@ -153,10 +161,11 @@ public class Controller {
         view.getBtnBorrarTarea().setOnAction(e->{
         	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
         	if(tarea_activa!=null) {
-        		if(view.getConfirmacion()) {
+        		if(view.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
             		try {
         				model.borrarTarea(tarea_activa);
         				tabla_tareas.refresh();
+        				cargarCategorias();//volvemos a vincular las categorias a el textfield
         			} catch (SQLException e1) {
         				view.setAlerta(
         					    "No se pudo eliminar la tarea.\n\n" +
@@ -180,6 +189,7 @@ public class Controller {
         
         //Boton de marcar tarea como "en progreso"
         view.getBtnMarcarProgresoTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
         	if(tarea_activa!=null) {
 	        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
 	        	try {
@@ -205,6 +215,7 @@ public class Controller {
         
       //Boton de marcar tarea como "Completada"
         view.getBtnCompletarTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
         	if(tarea_activa!=null) {
 	        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
 	        	try {
@@ -310,8 +321,16 @@ public class Controller {
         			tabla_tareas.getItems().clear(); //limpiamos para que no se acumule la lista de las tareas obtenidas con las de la tabla original
         			inicializarTareasTabla();
         		}else {
-        			//OJO, getItems().setAll() solo remplaza el contenido actual de la tabla por una nueva lista o datos, mas no cambia la lista original "lista_tareas " vinculada a la tabla, por lo que las operaciones que se hagan, afectan a la lista original
-        			tabla_tareas.getItems().setAll(model.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados));
+        			ObservableList<Tarea>tareas_filtradas= model.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados);
+        			if(!tareas_filtradas.isEmpty()) {
+        				//OJO, getItems().setAll() solo remplaza el contenido actual de la tabla por una nueva lista o datos, mas no cambia la lista original "lista_tareas " vinculada a la tabla, por lo que las operaciones que se hagan, afectan a la lista original
+        				tabla_tareas.getItems().setAll(tareas_filtradas);
+        			}else {
+        				tabla_tareas.getItems().clear();
+        				tabla_tareas.setPlaceholder(new Label("No hay ninguna tarea que coincida con esos criterios."));
+        			}
+        			
+        			
         		}
 				
 			} catch (SQLException e1) {
@@ -341,6 +360,78 @@ public class Controller {
         view.getBtnBusqueda().setOnAction(e->{
         	buscarTareas();
         });
+        
+// -------------------------BOTONES DE TAREAS DE PRUEBA -----------------
+        view.getBtnCargarTareasPrueba().setOnAction(e -> {
+        	if (view.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
+        		try {
+        			borrarTareas();
+        			model.nuevaTarea("Estudiar matemáticas", LocalDate.of(2025,1,10), LocalDate.of(2025,1,12), "Estudios", "Alta", "Pendiente", "Repasar ecuaciones y álgebra");
+        			model.nuevaTarea("Comprar víveres", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Hogar", "Media", "Pendiente", "Comprar arroz, leche y verduras");
+        			model.nuevaTarea("Llamar al médico", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Salud", "Alta", "Pendiente", "Solicitar cita de control");
+        			model.nuevaTarea("Preparar presentación", LocalDate.of(2025,1,10), LocalDate.of(2025,1,15), "Trabajo", "Alta", "En progreso", "Avanzar diapositivas");
+        			model.nuevaTarea("Hacer ejercicio", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Personal", "Baja", "Completada", "30 minutos de cardio");
+        			model.nuevaTarea("Leer libro de Java", LocalDate.of(2025,1,3), LocalDate.of(2025,1,20), "Estudios", "Media", "En progreso", "Capítulo sobre colecciones");
+        			model.nuevaTarea("Organizar escritorio", LocalDate.of(2025,1,6), LocalDate.of(2025,1,6), "Hogar", "Baja", "Pendiente", "Ordenar cables y papeles");
+        			model.nuevaTarea("Enviar currículum", LocalDate.of(2025,1,14), LocalDate.of(2025,1,14), "Trabajo", "Alta", "Pendiente", "Enviar a 3 empresas");
+        			model.nuevaTarea("Limpiar la cocina", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Pendiente", "Fregar platos y limpiar estufa");
+        			model.nuevaTarea("Vaciar papeleras", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Baja", "Pendiente", "Todas las habitaciones");
+        			model.nuevaTarea("Actualizar portafolio", LocalDate.of(2025,1,18), LocalDate.of(2025,1,18), "Trabajo", "Alta", "En progreso", "Agregar proyecto JavaFX");
+        			model.nuevaTarea("Planificar viaje", LocalDate.of(2025,1,25), LocalDate.of(2025,1,30), "Personal", "Media", "Pendiente", "Buscar hoteles y vuelos");
+        			model.nuevaTarea("Revisar correo", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Trabajo", "Baja", "Completada", "Limpiar bandeja de entrada");
+        			model.nuevaTarea("Practicar guitarra", LocalDate.of(2025,1,4), LocalDate.of(2025,1,4), "Personal", "Baja", "Pendiente", "Aprender nuevo acorde");
+        			model.nuevaTarea("Hacer copia de seguridad", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Tecnología", "Alta", "Pendiente", "Respaldar documentos");
+        			model.nuevaTarea("Pagar servicios", LocalDate.of(2025,1,9), LocalDate.of(2025,1,9), "Hogar", "Alta", "Pendiente", "Luz y agua");
+        			model.nuevaTarea("Regar plantas", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Media", "Completada", "Regar todas las macetas");
+        			model.nuevaTarea("Revisar proyecto Java", LocalDate.of(2025,1,6), LocalDate.of(2025,1,7), "Estudios", "Alta", "En progreso", "Corregir errores");
+        			model.nuevaTarea("Ver tutorial de SQL", LocalDate.of(2025,1,11), LocalDate.of(2025,1,11), "Estudios", "Media", "Pendiente", "FTS5 y triggers");
+        			model.nuevaTarea("Ordenar archivos del PC", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Tecnología", "Baja", "Pendiente", "Eliminar duplicados");
+        			model.nuevaTarea("Sacar al perro", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Completada", "Paseo de 20 min");
+        			model.nuevaTarea("Estudiar inglés", LocalDate.of(2025,1,13), LocalDate.of(2025,1,20), "Estudios", "Alta", "En progreso", "Repasar vocabulario");
+        			model.nuevaTarea("Revisar finanzas", LocalDate.of(2025,1,16), LocalDate.of(2025,1,16), "Personal", "Alta", "Pendiente", "Organizar gastos del mes");
+        			model.nuevaTarea("Limpiar coche", LocalDate.of(2025,1,19), LocalDate.of(2025,1,19), "Hogar", "Baja", "Pendiente", "Aspirar asientos");
+        			model.nuevaTarea("Escribir ideas de proyecto", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Trabajo", "Media", "Pendiente", "Anotar nuevas funciones");
+        			cargarCategorias();
+        		} catch (SQLException e1) {
+        			view.setAlerta(
+        					"No se pudo generar las tareas de prueba en la base de datos.\n\n" +
+        							"Posibles causas:\n" +
+        							"   • La base de datos está siendo usada por otro programa.\n" +
+        							"   • El archivo 'TaskManager.db' está corrupto.\n" +
+        							"   • La tabla 'Tareas' o 'Categorias' no existe o está dañada.\n\n" +
+        							"Qué puedes hacer:\n" +
+        							"   • Cierra y vuelve a abrir la aplicación.\n" +
+        							"   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
+        							"   • Si el problema continúa, elimina el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
+        							"Detalles técnicos:\n" + e1.getMessage()
+        					);
+        		}
+
+        });
+        
+        view.getBtnResetearTareas().setOnAction(e->{
+        	if(view.getConfirmacion("¿Estas seguro de resetear la tabla de tareas?", "Se perderan los cambios y tareas de forma permamente")) {
+        		try {
+					borrarTareas();
+					cargarCategorias();
+				} catch (SQLException e1) {
+					view.setAlerta(
+	                        "No se pudo resetear la tabla de tareas en la base de datos.\n\n" +
+	                        "Posibles causas:\n" +
+	                        "   • La base de datos está siendo usada por otro programa.\n" +
+	                        "   • El archivo 'TaskManager.db' está corrupto.\n" +
+	                        "   • La tabla 'Tareas' o 'Categorias' no existe o está dañada.\n\n" +
+	                        "Qué puedes hacer:\n" +
+	                        "   • Cierra y vuelve a abrir la aplicación.\n" +
+	                        "   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
+	                        "   • Si el problema continúa, elimina el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
+	                        "Detalles técnicos:\n" + e1.getMessage()
+	                    );
+				}
+        	}
+        	
+        });
+
 
 
         
@@ -350,13 +441,8 @@ public class Controller {
         	obtenerElementosForm();
             try {
                 model.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);//dentro de ese metodo si la categoria es nueva se añade
-                //si la categoria es nueva se guardara en las categorias
-                if(!categoria.trim().isEmpty()) {
-                	if (!categorias.contains(categoria)) {
-                        categorias.add(categoria);
-                        TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias);//volvemos a vincular los valores
-                    }
-                }
+                cargarCategorias();//volvemos a vincular las categorias a el textfield
+                
                 form.setVisible(false);
                 form.setManaged(false);
             } catch (SQLException e1) {
@@ -386,12 +472,7 @@ public class Controller {
 				form.setVisible(false);
 	            form.setManaged(false);
 	            tabla_tareas.refresh();
-	            if(!categoria.trim().isEmpty()) {
-                	if (!categorias.contains(categoria)) {
-                        categorias.add(categoria);
-                        TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias);//volvemos a vincular los valores
-                    }
-                }
+	            cargarCategorias();//volvemos a vincular las categorias a el textfield
         	} catch (SQLException e1) {
 				view.setAlerta(
 					    "No se pudo actualizar la tarea.\n\n" +
@@ -416,6 +497,11 @@ public class Controller {
             form.setManaged(false);
         });
     }
+
+	private void borrarTareas() throws SQLException {
+		tabla_tareas.getItems().clear();
+		model.borrarTareas();
+	}
 
 	private void buscarTareas() {
 		String txtBusqueda= view.getTxtBusqueda().getText();
