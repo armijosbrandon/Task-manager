@@ -1,6 +1,6 @@
 package io.github.ArmijosBrandon.TaskManager;
 
-import io.github.ArmijosBrandon.TaskManager.View;
+import io.github.ArmijosBrandon.TaskManager.MainView;
 import io.github.ArmijosBrandon.TaskManager.Model;
 import io.github.ArmijosBrandon.TaskManager.Controller;
 import javafx.application.Application;
@@ -16,7 +16,7 @@ public class Main extends Application {
 
         try {
             Model model = new Model();
-            View view = new View(stage);
+            MainView view = new MainView(stage);
             controller = new Controller(model, view); 
             view.show();
         } catch(Exception e) {

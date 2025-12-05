@@ -210,9 +210,9 @@ public class Model {
 			
 			for (Tarea t : lista_tareas) {
 		        if (t.getNum() == num_tarea) {
-		            t.setTarea_nombre(nombre_tarea);
-		            t.setFecha_inicio(fecha_inicio);
-		            t.setFecha_final(fecha_final);
+		            t.setTareaNombre(nombre_tarea);
+		            t.setFechaInicio(fecha_inicio);
+		            t.setFechaFinal(fecha_final);
 		            t.setCategoria(categoria);
 		            t.setPrioridad(prioridad);
 		            t.setEstado(estado);

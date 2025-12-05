@@ -16,22 +16,23 @@ import java.util.Optional;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import com.sun.javafx.scene.traversal.Direction;
 
 
 
-public class View {
+public class MainView {
 	private Stage stage;
-	//btns de pantalla principal
+	//----SECCION PRINCIPA
 	private Button btnNuevaTarea;
 	private Button btnEditarTarea;
 	private Button btnBorrarTarea;
 	private Button btnCompletarTarea;
 	private Button btnMarcarProgresoTarea;
 	private Button btnFiltrarTarea;
-	private TableView<Tarea> tabla_tareas;
 	private Button btnBusqueda;
 	private TextField txtBusqueda;
+	//------------TABLA-------///
+	private TablaTareasView tablaTareasView;
+	
 	//elementos del form
 	private TextField txtNombre_tarea;
 	private DatePicker fecha_inicio;
@@ -51,7 +52,7 @@ public class View {
 
 	private VBox form;
 	
-	public View(Stage stage) {
+	public MainView(Stage stage) {
 		this.stage=stage;
 		initializeUI();
 	}
@@ -93,68 +94,10 @@ public class View {
 		btnFiltrarTarea.setGraphic(new FontIcon("fas-filter"));
 		
 		HBox contBotones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnMarcarProgresoTarea,btnCompletarTarea,busquedaBox,btnFiltrarTarea);
-		//CONTENEDOR TABLA DE TAREAS
-		tabla_tareas= new TableView<>();
-		tabla_tareas.setPlaceholder(new Label("Ingresa tus tareas con el boton \"Nueva tarea\""));
-		//columnas
-		TableColumn<Tarea, Integer> colNum = new TableColumn<>("Num");//esta fila leera un dato entero de un objeto tarea
-		TableColumn<Tarea, String> colTareaNombre = new TableColumn<>("Tarea");
-		TableColumn<Tarea, LocalDate> colFechaInicio = new TableColumn<>("Fecha Inicio");
-		TableColumn<Tarea, LocalDate> colFechaFinal = new TableColumn<>("Fecha Final");
-		TableColumn<Tarea, String> colCategoria = new TableColumn<>("Categoría");
-		TableColumn<Tarea, String> colPrioridad = new TableColumn<>("Prioridad");
-		TableColumn<Tarea, String> colEstado = new TableColumn<>("Estado");
-		TableColumn<Tarea, String> colObservacion = new TableColumn<>("Observación");
 		
-		//contenido, inidicar a cada columna que getter usar para llenar su contenido
-		colNum.setCellValueFactory(new PropertyValueFactory<>("num")); //busca getNum() de la clase tarea
-		colTareaNombre.setCellValueFactory(new PropertyValueFactory<>("tarea_nombre"));
-		colFechaInicio.setCellValueFactory(new PropertyValueFactory<>("fecha_inicio"));
-		colFechaFinal.setCellValueFactory(new PropertyValueFactory<>("fecha_final"));
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //convierto local date a string con un formato especifico
+		//----TABLA DE TAREAS
+		tablaTareasView= new TablaTareasView();
 		
-		//cellFactory determina como quiero  que se vea cada celda dentro de una columna
-		colFechaInicio.setCellFactory(column -> new TableCell<Tarea, LocalDate>() { //cuando java le da una columna(en ese caso automaticamente le manda colfecha_inicio) me retorna una celda de ese tipo
-		    @Override
-		  //método que JavaFX llama automáticamente cada vez que una celda del TableView necesita dibujarse, actualizarse, mostrar un dato, borrarse, define como se dibuja un dato en este caso la fecha en la celda
-		    protected void updateItem(LocalDate date, boolean empty) {//parametro 1 lo scada de lo que tiene setCellValueFactory de esa fila y el otro lo obtiene de si esta fuera de vision o no(lo manda java automaticamente)
-		        super.updateItem(date, empty); //contruye la celda de manera normal pero ahora con mis valores para no perder las otras funciones
-		        if (empty || date == null) {
-		            setText(null);
-		        } else {
-		            setText(formatter.format(date));//formate la fecha a lo que quiero y lo pone en la celda
-		        }
-		    }
-		});
-
-		colFechaFinal.setCellFactory(column -> new TableCell<Tarea, LocalDate>() {
-		    @Override
-		    protected void updateItem(LocalDate date, boolean empty) {
-		        super.updateItem(date, empty);
-		        if (empty || date == null) {
-		            setText(null);
-		        } else {
-		            setText(formatter.format(date));
-		        }
-		    }
-		});
-
-		colCategoria.setCellValueFactory(new PropertyValueFactory<>("categoria"));
-		colPrioridad.setCellValueFactory(new PropertyValueFactory<>("prioridad"));
-		colEstado.setCellValueFactory(new PropertyValueFactory<>("estado"));
-		colObservacion.setCellValueFactory(new PropertyValueFactory<>("observacion"));
-	
-		//añado a la tabla las columnas
-		tabla_tareas.getColumns().addAll(
-			    colNum,
-			    colTareaNombre,
-			    colFechaInicio,
-			    colFechaFinal,
-			    colCategoria,
-			    colPrioridad,
-			    colEstado,
-			    colObservacion
-		);
 		
 		//-------DATOS DE PRUEBA---------------------------
 		btnCargarTareasPrueba= new Button("Cargar Tareas de Prueba");
@@ -166,7 +109,7 @@ public class View {
 		HBox conBotonesPrueba= new HBox(btnCargarTareasPrueba,btnResetearTareas);
 		
 		
-		VBox pantallaPrincipal= new VBox(10,contTitulo,contBotones,tabla_tareas,conBotonesPrueba);
+		VBox pantallaPrincipal= new VBox(10,contTitulo,contBotones,getTablaTareasView(),conBotonesPrueba);
 		
 		//formulario de nueva tarea
 		form= form();
@@ -219,10 +162,6 @@ public class View {
 		return new VBox(5, Titulo, lblNombre, txtNombre_tarea, lblFecha_inicio, fecha_inicio, lblFecha_final, fecha_final, lblCategoria, txtCategoria, cbPrioridad, cbEstado, lblObservacion, txtObservacion, botonesform);
 	}
 	
-	public TableView<Tarea> getTablaTareas() {
-		return tabla_tareas;
-
-	}
 	public Button getBtnNuevaTarea() {
 		return btnNuevaTarea;
 	}
@@ -353,6 +292,10 @@ public class View {
 		}
 	}
 	
+	public TablaTareasView getTablaTareasView() {//metodo para obtener la tabla creada
+		return tablaTareasView;
+	}
+
 	public void show() {
 		stage.show();
 		

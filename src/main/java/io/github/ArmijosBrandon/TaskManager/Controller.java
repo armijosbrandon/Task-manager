@@ -24,8 +24,11 @@ import javafx.stage.Popup;
 
 public class Controller {
 	private Model model;
-	private View view;
-	private TableView<Tarea> tabla_tareas;
+	private MainView mainView;
+	//-----TABLA DE TAREAS 
+	private TablaTareasView tabla_tareas;
+	
+	
 	private ObservableList<String> categorias = null;
 	private AutoCompletionBinding<String> autoCategoria; //guarda la instacia(lista_sugerencias) actal de autocompletado de un TextFields.bindAutoCompletion()
 	private VBox form;
@@ -55,9 +58,9 @@ public class Controller {
 
 
 	
-	public Controller(Model model, View view) {
+	public Controller(Model model, MainView mainView) {
 		this.model=model;
-		this.view=view;
+		this.mainView=mainView;
 		
 		inicializarConexion();//conecta a la base de datos
         inicializarTablas();//crea tablas si no existen
@@ -77,7 +80,7 @@ public class Controller {
             model.crearTablaCategorias();
             model.CrearTablaBusqueda();
         } catch (SQLException e) {
-            view.setAlerta(
+            mainView.setAlerta(
                 "No se pudo crear/verificar la tabla de tareas.\n\n" +
                 "Detalles: " + e.getMessage() + "\n\n" +
                 "Esto suele ocurrir solo la primera vez si hay un problema con la base de datos.\n" +
@@ -95,9 +98,9 @@ public class Controller {
             if (autoCategoria != null) {// si no es null
                 autoCategoria.dispose();//se destruye 
             }
-            autoCategoria =TextFields.bindAutoCompletion(view.getTxtCategoria(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
+            autoCategoria =TextFields.bindAutoCompletion(mainView.getTxtCategoria(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
         } catch (SQLException e) {
-            view.setAlerta(
+            mainView.setAlerta(
                 "No se pudieron cargar las categorías desde la base de datos.\n\n" +
                 "Posibles causas:\n" +
                 "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
@@ -113,7 +116,7 @@ public class Controller {
     }
     
     public void inicializarFormularios() {
-    	 form = view.getForm();
+    	 form = mainView.getForm();
     	 
     	 //Form de filtrado y sus elementos
     	 formFiltrarView = new FormFiltrarView();
@@ -129,10 +132,10 @@ public class Controller {
     //------------ EVENTOS DE BOTONES -------------------------------------------------
     private void inicializarEventosBotones() {
         
-    	Button btnGuardarTarea= view.getBtnGuardarTarea();
-    	Button btnComfirmarCambios= view.getBtnConfirmarCambios();
+    	Button btnGuardarTarea= mainView.getBtnGuardarTarea();
+    	Button btnComfirmarCambios= mainView.getBtnConfirmarCambios();
         //evento botón "Nueva Tarea"
-        view.getBtnNuevaTarea().setOnAction(e -> {
+        mainView.getBtnNuevaTarea().setOnAction(e -> {
         	resetearForm();
         	btnGuardarTarea.setVisible(true);
         	btnGuardarTarea.setManaged(true);
@@ -143,8 +146,8 @@ public class Controller {
         });   
         
         //evento de editar tarea seleccionada
-        view.getBtnEditarTarea().setOnAction(e->{
-        	if(tabla_tareas.getSelectionModel().getSelectedItem()!=null) {
+        mainView.getBtnEditarTarea().setOnAction(e->{
+        	if(tabla_tareas.getTareaSeleccionada()!=null) {
         		llenarFormCampoActivo();
         		form.setVisible(true);
             	form.setManaged(true);
@@ -153,21 +156,24 @@ public class Controller {
             	btnGuardarTarea.setVisible(false);
             	btnGuardarTarea.setManaged(false);
         	}else{
-        		view.setAlerta("Selecciona una fila para poder editar.");
+        		mainView.setAlerta("Selecciona una fila para poder editar.");
         	}	
         });
         
         
-        view.getBtnBorrarTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+        mainView.getBtnBorrarTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getTareaSeleccionada();
         	if(tarea_activa!=null) {
-        		if(view.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
+        		if(mainView.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
             		try {
         				model.borrarTarea(tarea_activa);
-        				tabla_tareas.refresh();
+        				tabla_tareas.refrescar();
         				cargarCategorias();//volvemos a vincular las categorias a el textfield
+        				if(tabla_tareas.getContenido().isEmpty()) {
+        					tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
+        				}
         			} catch (SQLException e1) {
-        				view.setAlerta(
+        				mainView.setAlerta(
         					    "No se pudo eliminar la tarea.\n\n" +
         					    "Posibles causas:\n" +
         					    "   • La base de datos está en uso por otro programa.\n" +
@@ -181,21 +187,21 @@ public class Controller {
         			}
             	}
         	}else {
-        		view.setAlerta("No hay ninguna fila seleccionada");
+        		mainView.setAlerta("No hay ninguna fila seleccionada");
         	}
         	
         	
         });
         
         //Boton de marcar tarea como "en progreso"
-        view.getBtnMarcarProgresoTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+        mainView.getBtnMarcarProgresoTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getTareaSeleccionada();
         	if(tarea_activa!=null) {
-	        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+	        	tarea_activa=tabla_tareas.getTareaSeleccionada();
 	        	try {
 					model.MarcarProgresoTarea(tarea_activa);
 				} catch (SQLException e1) {
-					view.setAlerta(
+					mainView.setAlerta(
 						    "No se pudo actualizar el estado de la tarea.\n\n" +
 						    "Posibles causas:\n" +
 						    "   • La base de datos está en uso por otro programa.\n" +
@@ -207,21 +213,21 @@ public class Controller {
 						    "Detalles técnicos:\n" + e1.getMessage()
 						);
 				}
-	        	tabla_tareas.refresh();
+	        	tabla_tareas.refrescar();
         	}else {
-        		view.setAlerta("No hay ninguna fila seleccionada");
+        		mainView.setAlerta("No hay ninguna fila seleccionada");
         	}
         });
         
       //Boton de marcar tarea como "Completada"
-        view.getBtnCompletarTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+        mainView.getBtnCompletarTarea().setOnAction(e->{
+        	tarea_activa=tabla_tareas.getTareaSeleccionada();
         	if(tarea_activa!=null) {
-	        	tarea_activa=tabla_tareas.getSelectionModel().getSelectedItem();
+	        	tarea_activa=tabla_tareas.getTareaSeleccionada();
 	        	try {
 					model.MarcarCompletaTarea(tarea_activa);
 				} catch (SQLException e1) {
-					view.setAlerta(
+					mainView.setAlerta(
 						    "No se pudo actualizar el estado de la tarea.\n\n" +
 						    "Posibles causas:\n" +
 						    "   • La base de datos está en uso por otro programa.\n" +
@@ -233,16 +239,16 @@ public class Controller {
 						    "Detalles técnicos:\n" + e1.getMessage()
 						);
 				}
-	        	tabla_tareas.refresh();
+	        	tabla_tareas.refrescar();
         	}else {
-        		view.setAlerta("No hay ninguna fila seleccionada");
+        		mainView.setAlerta("No hay ninguna fila seleccionada");
         	}
         });
         
         
         //boton de filtrar
-        view.getBtnFiltrarTarea().setOnAction(e->{
-        	Button btnFiltrar=view.getBtnFiltrarTarea();
+        mainView.getBtnFiltrarTarea().setOnAction(e->{
+        	Button btnFiltrar=mainView.getBtnFiltrarTarea();
         	formFiltrarView.setAutoHide(true);//hacer que se cierre al clickear fuera de el
         	if (!formFiltrarView.isShowing()) {//solo mostrar si no se esta mostrando, para evitar que espame el boton y salgan muchas
         		 formFiltrarView.show(btnFiltrar,//objeto de referencia para posicion del popup
@@ -318,23 +324,23 @@ public class Controller {
         	guardarSeleccionCategorias(formFiltrarView.getContCategorias());
         	try {
         		if(prioridadesSeleccionadas.isEmpty() && estadosSeleccionados.isEmpty() && categoriasSeleccionadas.isEmpty()) {
-        			tabla_tareas.getItems().clear(); //limpiamos para que no se acumule la lista de las tareas obtenidas con las de la tabla original
+        			tabla_tareas.limpiarTabla(); //limpiamos para que no se acumule la lista de las tareas obtenidas con las de la tabla original
         			inicializarTareasTabla();
         		}else {
         			ObservableList<Tarea>tareas_filtradas= model.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados);
         			if(!tareas_filtradas.isEmpty()) {
-        				//OJO, getItems().setAll() solo remplaza el contenido actual de la tabla por una nueva lista o datos, mas no cambia la lista original "lista_tareas " vinculada a la tabla, por lo que las operaciones que se hagan, afectan a la lista original
-        				tabla_tareas.getItems().setAll(tareas_filtradas);
+        				
+        				tabla_tareas.remplazarContenido(tareas_filtradas);
         			}else {
-        				tabla_tareas.getItems().clear();
-        				tabla_tareas.setPlaceholder(new Label("No hay ninguna tarea que coincida con esos criterios."));
+        				tabla_tareas.limpiarTabla();
+        				tabla_tareas.setPlaceHolder("No hay ninguna tarea que coincida con esos criterios.");
         			}
         			
         			
         		}
 				
 			} catch (SQLException e1) {
-				view.setAlerta(
+				mainView.setAlerta(
 					    "No se pudieron obtener las tareas filtradas desde la base de datos.\n\n" +
 					    "Posibles causas:\n" +
 					    "   • La conexión con la base de datos falló o está cerrada.\n" +
@@ -354,16 +360,16 @@ public class Controller {
         
 
 //----------------------BOTON DE BUSQUEDA-------------------
-        view.getTxtBusqueda().setOnAction(e->{
+        mainView.getTxtBusqueda().setOnAction(e->{
         	buscarTareas();
         });
-        view.getBtnBusqueda().setOnAction(e->{
+        mainView.getBtnBusqueda().setOnAction(e->{
         	buscarTareas();
         });
         
 // -------------------------BOTONES DE TAREAS DE PRUEBA -----------------
-        view.getBtnCargarTareasPrueba().setOnAction(e -> {
-        	if (view.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
+        mainView.getBtnCargarTareasPrueba().setOnAction(e -> {
+        	if (mainView.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
         		try {
         			borrarTareas();
         			model.nuevaTarea("Estudiar matemáticas", LocalDate.of(2025,1,10), LocalDate.of(2025,1,12), "Estudios", "Alta", "Pendiente", "Repasar ecuaciones y álgebra");
@@ -393,7 +399,7 @@ public class Controller {
         			model.nuevaTarea("Escribir ideas de proyecto", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Trabajo", "Media", "Pendiente", "Anotar nuevas funciones");
         			cargarCategorias();
         		} catch (SQLException e1) {
-        			view.setAlerta(
+        			mainView.setAlerta(
         					"No se pudo generar las tareas de prueba en la base de datos.\n\n" +
         							"Posibles causas:\n" +
         							"   • La base de datos está siendo usada por otro programa.\n" +
@@ -409,13 +415,13 @@ public class Controller {
 
         });
         
-        view.getBtnResetearTareas().setOnAction(e->{
-        	if(view.getConfirmacion("¿Estas seguro de resetear la tabla de tareas?", "Se perderan los cambios y tareas de forma permamente")) {
+        mainView.getBtnResetearTareas().setOnAction(e->{
+        	if(mainView.getConfirmacion("¿Estas seguro de resetear la tabla de tareas?", "Se perderan los cambios y tareas de forma permamente")) {
         		try {
 					borrarTareas();
 					cargarCategorias();
 				} catch (SQLException e1) {
-					view.setAlerta(
+					mainView.setAlerta(
 	                        "No se pudo resetear la tabla de tareas en la base de datos.\n\n" +
 	                        "Posibles causas:\n" +
 	                        "   • La base de datos está siendo usada por otro programa.\n" +
@@ -437,7 +443,7 @@ public class Controller {
         
 //----------------------BOTONES DEL FORM-------------------
         //evento botón "Guardar Tarea" del form
-        view.getBtnGuardarTarea().setOnAction(e -> {
+        mainView.getBtnGuardarTarea().setOnAction(e -> {
         	obtenerElementosForm();
             try {
                 model.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);//dentro de ese metodo si la categoria es nueva se añade
@@ -446,7 +452,7 @@ public class Controller {
                 form.setVisible(false);
                 form.setManaged(false);
             } catch (SQLException e1) {
-                view.setAlerta(
+                mainView.setAlerta(
                     "No se pudo guardar la nueva tarea en la base de datos.\n\n" +
                     "Posibles causas:\n" +
                     "   • La base de datos está siendo usada por otro programa.\n" +
@@ -464,17 +470,17 @@ public class Controller {
         });
         
         //btn comfirmar cambios del form
-        view.getBtnConfirmarCambios().setOnAction(e->{
+        mainView.getBtnConfirmarCambios().setOnAction(e->{
         	obtenerElementosForm();
         	num_tarea=tarea_activa.getNum();
         	try {
 				model.actualizarCampos(num_tarea,nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);
 				form.setVisible(false);
 	            form.setManaged(false);
-	            tabla_tareas.refresh();
+	            tabla_tareas.refrescar();
 	            cargarCategorias();//volvemos a vincular las categorias a el textfield
         	} catch (SQLException e1) {
-				view.setAlerta(
+				mainView.setAlerta(
 					    "No se pudo actualizar la tarea.\n\n" +
 					    "Posibles causas:\n" +
 					    "   • La tarea no existe o no está seleccionada.\n" +
@@ -492,36 +498,38 @@ public class Controller {
         });
         
         //btn cancelar del formulario
-        view.getBtnCancelar().setOnAction(e->{
+        mainView.getBtnCancelar().setOnAction(e->{
         	form.setVisible(false);
             form.setManaged(false);
         });
     }
 
 	private void borrarTareas() throws SQLException {
-		tabla_tareas.getItems().clear();
+		tabla_tareas.limpiarTabla();
 		model.borrarTareas();
+		tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
 	}
 
 	private void buscarTareas() {
-		String txtBusqueda= view.getTxtBusqueda().getText();
+		String txtBusqueda= mainView.getTxtBusqueda().getText();
     	try {
     		if(txtBusqueda.trim().isEmpty()) {
-    			tabla_tareas.getItems().clear();
+    			tabla_tareas.limpiarTabla();
     			inicializarTareasTabla();
+
     		}else {
     			ObservableList<Tarea> tareas_buscadas = model.buscarTareas(txtBusqueda);
     			if (!tareas_buscadas.isEmpty()) {
-    			    tabla_tareas.getItems().setAll(tareas_buscadas);
+    			    tabla_tareas.remplazarContenido(tareas_buscadas);
     			} else {
-    			    tabla_tareas.setPlaceholder(new Label("No hay resultados."));
-    			    tabla_tareas.getItems().clear(); // opcional
+    			    tabla_tareas.setPlaceHolder("No hay resultados.");
+    			    tabla_tareas.limpiarTabla();
     			}
 
     		}
 			
 		} catch (SQLException e1) {
-			view.setAlerta(
+			mainView.setAlerta(
 				    "No se pudieron obtener las tareas buscadas desde la base de datos.\n\n" +
 				    "Posibles causas:\n" +
 				    "   • La conexión con la base de datos falló o está cerrada.\n" +
@@ -542,7 +550,7 @@ public class Controller {
         try {
             model.setConnection(model.connect());  
         } catch (SQLException e) {
-            view.setAlerta(
+            mainView.setAlerta(
                 "No se pudo conectar con la base de datos.\n\n" +
                 "Detalles: " + e.getMessage() + "\n\n" +
                 "Posibles soluciones:\n" +
@@ -554,12 +562,16 @@ public class Controller {
     }
 	public void inicializarTareasTabla() {
 		//obtener tabla con tareas actuales en la bd
-		tabla_tareas= view.getTablaTareas();
+		tabla_tareas= mainView.getTablaTareasView();
+		
 		try {
 			//vincula una lista para la tabla donde va a cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
-			tabla_tareas.setItems(model.obtenerTareas());//ademas establece la lista a la que se la va a aplciar los cambios realizados en la tabla
+			tabla_tareas.setContenidoPrincipal(model.obtenerTareas());//ademas establece la lista a la que se la va a aplciar los cambios realizados en la tabla
+			if(tabla_tareas.getContenido().isEmpty()) {//para que en operaciones como en la de buscar si es que regresesa a la tabla normal y no hay tareas que cargue el siguiente place holder
+				tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
+			}
 		} catch (SQLException e) {
-			 view.setAlerta(
+			 mainView.setAlerta(
 		                "No se pudieron cargar las tareas desde la base de datos.\n\n" +
 		                "Posibles causas:\n" +
 		                "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
@@ -575,26 +587,26 @@ public class Controller {
 	}
 	
 	private void resetearForm() {
-		view.setTxtNombre_tarea("");
-		view.setFecha_inicio(LocalDate.now());
-		view.setFecha_final(LocalDate.now().plusDays(5));
-		view.setTxtCategoria("");
-		view.setTxtObservacion("");
+		mainView.setTxtNombre_tarea("");
+		mainView.setFecha_inicio(LocalDate.now());
+		mainView.setFecha_final(LocalDate.now().plusDays(5));
+		mainView.setTxtCategoria("");
+		mainView.setTxtObservacion("");
 		
 	}
 	
 	private void obtenerElementosForm() {
-		nombre_tarea = view.getTxtNombre_tarea().getText();
-        fecha_inicio = view.getFecha_inicio().getValue();
-        fecha_final = view.getFecha_final().getValue();
-        prioridad = view.getCbPrioridad().getValue();
-        estado = view.getCbEstado().getValue();
-        categoria = view.getTxtCategoria().getText();
-        observacion = view.getTxtObservacion().getText();
+		nombre_tarea = mainView.getTxtNombre_tarea().getText();
+        fecha_inicio = mainView.getFecha_inicio().getValue();
+        fecha_final = mainView.getFecha_final().getValue();
+        prioridad = mainView.getCbPrioridad().getValue();
+        estado = mainView.getCbEstado().getValue();
+        categoria = mainView.getTxtCategoria().getText();
+        observacion = mainView.getTxtObservacion().getText();
 	}
 	
 	private void llenarFormCampoActivo() {
-		tarea_activa= tabla_tareas.getSelectionModel().getSelectedItem(); //obtener la tarea activa
+		tarea_activa= tabla_tareas.getTareaSeleccionada(); //obtener la tarea activa
 		String prioridad= tarea_activa.getPrioridad();
 		String estado=tarea_activa.getEstado();
 		int item_prioridad=0;
@@ -616,13 +628,13 @@ public class Controller {
 			item_estado=2;
 		}
 		
-		view.setTxtNombre_tarea(tarea_activa.getTarea_nombre());
-		view.setFecha_inicio(tarea_activa.getFecha_inicio());
-		view.setFecha_final(tarea_activa.getFecha_final());
-		view.setTxtCategoria(tarea_activa.getCategoria());
-		view.setCbPrioridad(item_prioridad);
-		view.setCbEstado(item_estado);
-		view.setTxtObservacion(tarea_activa.getObservacion());
+		mainView.setTxtNombre_tarea(tarea_activa.getTareaNombre());
+		mainView.setFecha_inicio(tarea_activa.getFechaInicio());
+		mainView.setFecha_final(tarea_activa.getFechaFinal());
+		mainView.setTxtCategoria(tarea_activa.getCategoria());
+		mainView.setCbPrioridad(item_prioridad);
+		mainView.setCbEstado(item_estado);
+		mainView.setTxtObservacion(tarea_activa.getObservacion());
 		
 	}
 	
@@ -672,7 +684,7 @@ public class Controller {
 	        try {
 	            conn.close();
 	        } catch (SQLException e) {
-	        	view.setAlerta(
+	        	mainView.setAlerta(
 	                    "No se pudo cerrar correctamente la conexión con la base de datos.\n\n" +
 	                    "Tus datos no se han perdido. Este error no afecta el funcionamiento de la aplicación.\n\n" +
 	                    "Qué puedes hacer:\n" +
