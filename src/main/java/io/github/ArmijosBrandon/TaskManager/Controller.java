@@ -28,10 +28,12 @@ public class Controller {
 	//-----TABLA DE TAREAS 
 	private TablaTareasView tabla_tareas;
 	
+	//------FORMULARIO DE TARAS
+	private FormularioTareasView form;
+	
 	
 	private ObservableList<String> categorias = null;
 	private AutoCompletionBinding<String> autoCategoria; //guarda la instacia(lista_sugerencias) actal de autocompletado de un TextFields.bindAutoCompletion()
-	private VBox form;
 	//elementos del form
 	private int num_tarea;
 	private String nombre_tarea;
@@ -64,9 +66,10 @@ public class Controller {
 		
 		inicializarConexion();//conecta a la base de datos
         inicializarTablas();//crea tablas si no existen
+        inicializarFormularios();
         cargarCategorias(); //carga las categorias comunes del usuario
         inicializarTareasTabla();
-        inicializarFormularios();
+        
         inicializarEventosBotones(); //cargar los eventos de los botones
        
         
@@ -98,7 +101,7 @@ public class Controller {
             if (autoCategoria != null) {// si no es null
                 autoCategoria.dispose();//se destruye 
             }
-            autoCategoria =TextFields.bindAutoCompletion(mainView.getTxtCategoria(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
+            autoCategoria =TextFields.bindAutoCompletion(form.getCategoriaTextField(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
         } catch (SQLException e) {
             mainView.setAlerta(
                 "No se pudieron cargar las categorías desde la base de datos.\n\n" +
@@ -116,7 +119,7 @@ public class Controller {
     }
     
     public void inicializarFormularios() {
-    	 form = mainView.getForm();
+    	 form = mainView.getFormularioTareasView();
     	 
     	 //Form de filtrado y sus elementos
     	 formFiltrarView = new FormFiltrarView();
@@ -132,8 +135,8 @@ public class Controller {
     //------------ EVENTOS DE BOTONES -------------------------------------------------
     private void inicializarEventosBotones() {
         
-    	Button btnGuardarTarea= mainView.getBtnGuardarTarea();
-    	Button btnComfirmarCambios= mainView.getBtnConfirmarCambios();
+    	Button btnGuardarTarea= form.getBtnGuardarTarea();
+    	Button btnComfirmarCambios= form.getBtnConfirmarCambios();
         //evento botón "Nueva Tarea"
         mainView.getBtnNuevaTarea().setOnAction(e -> {
         	resetearForm();
@@ -443,7 +446,7 @@ public class Controller {
         
 //----------------------BOTONES DEL FORM-------------------
         //evento botón "Guardar Tarea" del form
-        mainView.getBtnGuardarTarea().setOnAction(e -> {
+        btnGuardarTarea.setOnAction(e -> {
         	obtenerElementosForm();
             try {
                 model.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);//dentro de ese metodo si la categoria es nueva se añade
@@ -470,7 +473,7 @@ public class Controller {
         });
         
         //btn comfirmar cambios del form
-        mainView.getBtnConfirmarCambios().setOnAction(e->{
+        btnComfirmarCambios.setOnAction(e->{
         	obtenerElementosForm();
         	num_tarea=tarea_activa.getNum();
         	try {
@@ -498,7 +501,7 @@ public class Controller {
         });
         
         //btn cancelar del formulario
-        mainView.getBtnCancelar().setOnAction(e->{
+        form.getBtnCancelar().setOnAction(e->{
         	form.setVisible(false);
             form.setManaged(false);
         });
@@ -511,14 +514,14 @@ public class Controller {
 	}
 
 	private void buscarTareas() {
-		String txtBusqueda= mainView.getTxtBusqueda().getText();
+		String Busqueda= mainView.getTxtBusqueda().getText();
     	try {
-    		if(txtBusqueda.trim().isEmpty()) {
+    		if(Busqueda.trim().isEmpty()) {
     			tabla_tareas.limpiarTabla();
     			inicializarTareasTabla();
 
     		}else {
-    			ObservableList<Tarea> tareas_buscadas = model.buscarTareas(txtBusqueda);
+    			ObservableList<Tarea> tareas_buscadas = model.buscarTareas(Busqueda);
     			if (!tareas_buscadas.isEmpty()) {
     			    tabla_tareas.remplazarContenido(tareas_buscadas);
     			} else {
@@ -587,54 +590,33 @@ public class Controller {
 	}
 	
 	private void resetearForm() {
-		mainView.setTxtNombre_tarea("");
-		mainView.setFecha_inicio(LocalDate.now());
-		mainView.setFecha_final(LocalDate.now().plusDays(5));
-		mainView.setTxtCategoria("");
-		mainView.setTxtObservacion("");
+		form.setNombreTarea("");
+		form.setFechaInicio(LocalDate.now());
+		form.setFechaFinal(LocalDate.now().plusDays(5));
+		form.setCategoria("");
+		form.setObservacion("");
 		
 	}
 	
 	private void obtenerElementosForm() {
-		nombre_tarea = mainView.getTxtNombre_tarea().getText();
-        fecha_inicio = mainView.getFecha_inicio().getValue();
-        fecha_final = mainView.getFecha_final().getValue();
-        prioridad = mainView.getCbPrioridad().getValue();
-        estado = mainView.getCbEstado().getValue();
-        categoria = mainView.getTxtCategoria().getText();
-        observacion = mainView.getTxtObservacion().getText();
+		nombre_tarea = form.getNombreTarea();
+        fecha_inicio = form.getFechaInicio();
+        fecha_final = form.getFechaFinal();
+        prioridad = form.getPrioridad();
+        estado = form.getEstado();
+        categoria = form.getCategoria();
+        observacion = form.getObservacion();
 	}
 	
 	private void llenarFormCampoActivo() {
 		tarea_activa= tabla_tareas.getTareaSeleccionada(); //obtener la tarea activa
-		String prioridad= tarea_activa.getPrioridad();
-		String estado=tarea_activa.getEstado();
-		int item_prioridad=0;
-		int item_estado=0;
-		
-		if(prioridad.equals("Alta")) {
-			item_prioridad=0;
-		}else if(prioridad.equals("Media")) {
-			item_prioridad=1;
-		}else {
-			item_prioridad=2;
-		}
-		
-		if(estado.equals("Pendiente")) {
-			item_estado=0;
-		}else if(estado.equals("En progreso")) {
-			item_estado=1;
-		}else {
-			item_estado=2;
-		}
-		
-		mainView.setTxtNombre_tarea(tarea_activa.getTareaNombre());
-		mainView.setFecha_inicio(tarea_activa.getFechaInicio());
-		mainView.setFecha_final(tarea_activa.getFechaFinal());
-		mainView.setTxtCategoria(tarea_activa.getCategoria());
-		mainView.setCbPrioridad(item_prioridad);
-		mainView.setCbEstado(item_estado);
-		mainView.setTxtObservacion(tarea_activa.getObservacion());
+		form.setNombreTarea(tarea_activa.getTareaNombre());
+		form.setFechaInicio(tarea_activa.getFechaInicio());
+		form.setFechaFinal(tarea_activa.getFechaFinal());
+		form.setCategoria(tarea_activa.getCategoria());
+		form.setPrioridad(tarea_activa.getPrioridad());
+		form.setEstado(tarea_activa.getEstado());
+		form.setObservacion(tarea_activa.getObservacion());
 		
 	}
 	

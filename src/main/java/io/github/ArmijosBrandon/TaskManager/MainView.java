@@ -33,24 +33,12 @@ public class MainView {
 	//------------TABLA-------///
 	private TablaTareasView tablaTareasView;
 	
-	//elementos del form
-	private TextField txtNombre_tarea;
-	private DatePicker fecha_inicio;
-	private DatePicker fecha_final;
-	private TextField txtCategoria;
-	private ComboBox<String> cbEstado;
-	private ComboBox<String> cbPrioridad;
-	private TextArea txtObservacion;
-	//btns de formulario
-	private Button btnConfirmarCambios;
-	private Button btnGuardarTarea;
-	private Button btnCancelar;
 	
 	//btns para gestionar  datos de prueba
 	private Button btnCargarTareasPrueba;
 	private Button btnResetearTareas;;
 
-	private VBox form;
+	private FormularioTareasView form;
 	
 	public MainView(Stage stage) {
 		this.stage=stage;
@@ -112,7 +100,7 @@ public class MainView {
 		VBox pantallaPrincipal= new VBox(10,contTitulo,contBotones,getTablaTareasView(),conBotonesPrueba);
 		
 		//formulario de nueva tarea
-		form= form();
+		form=  new FormularioTareasView();
 		form.setVisible(false);
 		form.setManaged(false);
 		form.setStyle("-fx-background-color: #05f0ad");
@@ -126,41 +114,7 @@ public class MainView {
 		stage.setTitle("Gestor de Tareas");
 	}
 	
-	public VBox form() {
-		Label Titulo= new Label("Agregar Tarea");
-		Label lblNombre= new Label("Nombre: "); 
-		txtNombre_tarea= new TextField();
-		txtNombre_tarea.setPromptText("Ingresa el nombre de la tarea aquí.");
-		
-		Label lblFecha_inicio= new Label("Fecha de inicio: ");
-		fecha_inicio= new DatePicker(LocalDate.now());
-		
-		Label lblFecha_final= new Label("Fecha limite: ");
-		fecha_final= new DatePicker(LocalDate.now().plusDays(5));
-		
-		Label lblCategoria= new Label("Categoria: "); 
-		txtCategoria= new TextField();
-		txtCategoria.setPromptText("Ingresa la categoria aquí.");
-		
-		cbPrioridad= new ComboBox<>();
-		cbPrioridad.getItems().addAll("Alta", "Media", "Baja");
-		cbPrioridad.setValue("Media");//valor por defecto
-
-		cbEstado= new ComboBox<>();
-		cbEstado.getItems().addAll("Pendiente", "En progreso", "Completada");
-		cbEstado.setValue("Pendiente"); // valor por defecto
-		
-		Label lblObservacion= new Label("Observaciones: "); 
-		txtObservacion= new TextArea();
-		txtObservacion.setPromptText("Observaciones adicionales.");
-		
-		btnGuardarTarea = new Button("Agregar Tarea");
-		btnConfirmarCambios= new Button("Confirmar Cambios");
-		btnCancelar=new Button("Cancelar");
-		HBox botonesform= new HBox(10,btnGuardarTarea,btnConfirmarCambios,btnCancelar);
-		
-		return new VBox(5, Titulo, lblNombre, txtNombre_tarea, lblFecha_inicio, fecha_inicio, lblFecha_final, fecha_final, lblCategoria, txtCategoria, cbPrioridad, cbEstado, lblObservacion, txtObservacion, botonesform);
-	}
+	
 	
 	public Button getBtnNuevaTarea() {
 		return btnNuevaTarea;
@@ -191,68 +145,6 @@ public class MainView {
 
 	public TextField getTxtBusqueda() {
 		return txtBusqueda;
-	}
-
-	public TextField getTxtNombre_tarea() {
-		return txtNombre_tarea;
-	}
-
-	public void setTxtNombre_tarea(String txtNombre_tarea) {
-		this.txtNombre_tarea.setText(txtNombre_tarea);;
-	}
-	public DatePicker getFecha_inicio() {
-		return fecha_inicio;
-	}
-	public void setFecha_inicio(LocalDate fecha_inicio) {
-		this.fecha_inicio.setValue(fecha_inicio);
-	}
-	public DatePicker getFecha_final() {
-		return fecha_final;
-	}
-	public void setFecha_final(LocalDate fecha_final) {
-		this.fecha_final.setValue(fecha_final);
-	}
-
-	public TextField getTxtCategoria() {
-		return txtCategoria;
-	}
-	public void setTxtCategoria(String txtCategoria ) {
-		this.txtCategoria.setText(txtCategoria);;
-	}
-
-	public ComboBox<String> getCbEstado() {
-		return cbEstado;
-	}
-	public void setCbEstado(int estado ) {
-		this.cbEstado.getSelectionModel().select(estado);
-	}
-	
-
-	public ComboBox<String> getCbPrioridad() {
-		return cbPrioridad;
-	}
-	
-	public void setCbPrioridad(int estado ) {
-		this.cbPrioridad.getSelectionModel().select(estado);
-	}
-	
-	public TextArea getTxtObservacion() {
-		return txtObservacion;
-	}
-	public void setTxtObservacion(String txtObservacion ) {
-		this.txtObservacion.setText(txtObservacion);;
-	}
-
-
-	public Button getBtnGuardarTarea() {
-		return btnGuardarTarea;
-	}
-	public Button getBtnConfirmarCambios() {
-		return btnConfirmarCambios;
-	}
-	
-	public Button getBtnCancelar() {
-		return btnCancelar;
 	}
 	
 	public Button getBtnCargarTareasPrueba() {
@@ -294,6 +186,10 @@ public class MainView {
 	
 	public TablaTareasView getTablaTareasView() {//metodo para obtener la tabla creada
 		return tablaTareasView;
+	}
+	
+	public FormularioTareasView getFormularioTareasView() {
+		return form;
 	}
 
 	public void show() {
