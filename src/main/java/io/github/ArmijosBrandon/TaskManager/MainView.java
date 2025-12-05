@@ -160,29 +160,7 @@ public class MainView {
 		
 	}
 
-	public void setAlerta(String error) {
-		Alert alerta = new Alert(AlertType.ERROR);
-		alerta.setTitle("!Error");
-		alerta.setHeaderText("Algo salio mal...."); 
-		alerta.setContentText(error);
-		alerta.showAndWait();
-	}
 	
-	public Boolean getConfirmacion(String header, String content) {
-		Alert alerta = new Alert(AlertType.CONFIRMATION);
-		alerta.setTitle("Confirmacion");
-		alerta.setHeaderText(header); 
-		alerta.setContentText(content);
-		
-		Optional<ButtonType> result = alerta.showAndWait(); // me devolvera el boton que haiga presionado el usuario, Optional es un contenedor que puede tener un valor o estar vacío. En este caso, normalmente tendrá un botón, pero JavaFX lo usa para evitar errores si la ventana se cierra de forma inesperada.
-		if (result.isPresent() && result.get() == ButtonType.OK) { //is present sera verdadero si hay algo en el optional
-		    // El usuario confirmó
-			return true;
-		} else {
-			// El usuario cancelo o cerro el dialogo forsozamente
-			return false;
-		}
-	}
 	
 	public TablaTareasView getTablaTareasView() {//metodo para obtener la tabla creada
 		return tablaTareasView;

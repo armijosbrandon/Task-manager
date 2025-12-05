@@ -83,7 +83,7 @@ public class Controller {
             model.crearTablaCategorias();
             model.CrearTablaBusqueda();
         } catch (SQLException e) {
-            mainView.setAlerta(
+            DialogosPantalla.showError(
                 "No se pudo crear/verificar la tabla de tareas.\n\n" +
                 "Detalles: " + e.getMessage() + "\n\n" +
                 "Esto suele ocurrir solo la primera vez si hay un problema con la base de datos.\n" +
@@ -103,7 +103,7 @@ public class Controller {
             }
             autoCategoria =TextFields.bindAutoCompletion(form.getCategoriaTextField(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
         } catch (SQLException e) {
-            mainView.setAlerta(
+            DialogosPantalla.showError(
                 "No se pudieron cargar las categorías desde la base de datos.\n\n" +
                 "Posibles causas:\n" +
                 "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
@@ -159,7 +159,7 @@ public class Controller {
             	btnGuardarTarea.setVisible(false);
             	btnGuardarTarea.setManaged(false);
         	}else{
-        		mainView.setAlerta("Selecciona una fila para poder editar.");
+        		DialogosPantalla.showError("Selecciona una fila para poder editar.");
         	}	
         });
         
@@ -167,7 +167,7 @@ public class Controller {
         mainView.getBtnBorrarTarea().setOnAction(e->{
         	tarea_activa=tabla_tareas.getTareaSeleccionada();
         	if(tarea_activa!=null) {
-        		if(mainView.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
+        		if(DialogosPantalla.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
             		try {
         				model.borrarTarea(tarea_activa);
         				tabla_tareas.refrescar();
@@ -176,7 +176,7 @@ public class Controller {
         					tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
         				}
         			} catch (SQLException e1) {
-        				mainView.setAlerta(
+        				DialogosPantalla.showError(
         					    "No se pudo eliminar la tarea.\n\n" +
         					    "Posibles causas:\n" +
         					    "   • La base de datos está en uso por otro programa.\n" +
@@ -190,7 +190,7 @@ public class Controller {
         			}
             	}
         	}else {
-        		mainView.setAlerta("No hay ninguna fila seleccionada");
+        		DialogosPantalla.showError("No hay ninguna fila seleccionada");
         	}
         	
         	
@@ -204,7 +204,7 @@ public class Controller {
 	        	try {
 					model.MarcarProgresoTarea(tarea_activa);
 				} catch (SQLException e1) {
-					mainView.setAlerta(
+					DialogosPantalla.showError(
 						    "No se pudo actualizar el estado de la tarea.\n\n" +
 						    "Posibles causas:\n" +
 						    "   • La base de datos está en uso por otro programa.\n" +
@@ -218,7 +218,7 @@ public class Controller {
 				}
 	        	tabla_tareas.refrescar();
         	}else {
-        		mainView.setAlerta("No hay ninguna fila seleccionada");
+        		DialogosPantalla.showError("No hay ninguna fila seleccionada");
         	}
         });
         
@@ -230,7 +230,7 @@ public class Controller {
 	        	try {
 					model.MarcarCompletaTarea(tarea_activa);
 				} catch (SQLException e1) {
-					mainView.setAlerta(
+					DialogosPantalla.showError(
 						    "No se pudo actualizar el estado de la tarea.\n\n" +
 						    "Posibles causas:\n" +
 						    "   • La base de datos está en uso por otro programa.\n" +
@@ -244,7 +244,7 @@ public class Controller {
 				}
 	        	tabla_tareas.refrescar();
         	}else {
-        		mainView.setAlerta("No hay ninguna fila seleccionada");
+        		DialogosPantalla.showError("No hay ninguna fila seleccionada");
         	}
         });
         
@@ -343,7 +343,7 @@ public class Controller {
         		}
 				
 			} catch (SQLException e1) {
-				mainView.setAlerta(
+				DialogosPantalla.showError(
 					    "No se pudieron obtener las tareas filtradas desde la base de datos.\n\n" +
 					    "Posibles causas:\n" +
 					    "   • La conexión con la base de datos falló o está cerrada.\n" +
@@ -372,7 +372,7 @@ public class Controller {
         
 // -------------------------BOTONES DE TAREAS DE PRUEBA -----------------
         mainView.getBtnCargarTareasPrueba().setOnAction(e -> {
-        	if (mainView.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
+        	if (DialogosPantalla.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
         		try {
         			borrarTareas();
         			model.nuevaTarea("Estudiar matemáticas", LocalDate.of(2025,1,10), LocalDate.of(2025,1,12), "Estudios", "Alta", "Pendiente", "Repasar ecuaciones y álgebra");
@@ -402,7 +402,7 @@ public class Controller {
         			model.nuevaTarea("Escribir ideas de proyecto", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Trabajo", "Media", "Pendiente", "Anotar nuevas funciones");
         			cargarCategorias();
         		} catch (SQLException e1) {
-        			mainView.setAlerta(
+        			DialogosPantalla.showError(
         					"No se pudo generar las tareas de prueba en la base de datos.\n\n" +
         							"Posibles causas:\n" +
         							"   • La base de datos está siendo usada por otro programa.\n" +
@@ -419,12 +419,12 @@ public class Controller {
         });
         
         mainView.getBtnResetearTareas().setOnAction(e->{
-        	if(mainView.getConfirmacion("¿Estas seguro de resetear la tabla de tareas?", "Se perderan los cambios y tareas de forma permamente")) {
+        	if(DialogosPantalla.getConfirmacion("¿Estas seguro de resetear la tabla de tareas?", "Se perderan los cambios y tareas de forma permamente")) {
         		try {
 					borrarTareas();
 					cargarCategorias();
 				} catch (SQLException e1) {
-					mainView.setAlerta(
+					DialogosPantalla.showError(
 	                        "No se pudo resetear la tabla de tareas en la base de datos.\n\n" +
 	                        "Posibles causas:\n" +
 	                        "   • La base de datos está siendo usada por otro programa.\n" +
@@ -455,7 +455,7 @@ public class Controller {
                 form.setVisible(false);
                 form.setManaged(false);
             } catch (SQLException e1) {
-                mainView.setAlerta(
+                DialogosPantalla.showError(
                     "No se pudo guardar la nueva tarea en la base de datos.\n\n" +
                     "Posibles causas:\n" +
                     "   • La base de datos está siendo usada por otro programa.\n" +
@@ -483,7 +483,7 @@ public class Controller {
 	            tabla_tareas.refrescar();
 	            cargarCategorias();//volvemos a vincular las categorias a el textfield
         	} catch (SQLException e1) {
-				mainView.setAlerta(
+				DialogosPantalla.showError(
 					    "No se pudo actualizar la tarea.\n\n" +
 					    "Posibles causas:\n" +
 					    "   • La tarea no existe o no está seleccionada.\n" +
@@ -532,7 +532,7 @@ public class Controller {
     		}
 			
 		} catch (SQLException e1) {
-			mainView.setAlerta(
+			DialogosPantalla.showError(
 				    "No se pudieron obtener las tareas buscadas desde la base de datos.\n\n" +
 				    "Posibles causas:\n" +
 				    "   • La conexión con la base de datos falló o está cerrada.\n" +
@@ -553,7 +553,7 @@ public class Controller {
         try {
             model.setConnection(model.connect());  
         } catch (SQLException e) {
-            mainView.setAlerta(
+            DialogosPantalla.showError(
                 "No se pudo conectar con la base de datos.\n\n" +
                 "Detalles: " + e.getMessage() + "\n\n" +
                 "Posibles soluciones:\n" +
@@ -574,7 +574,7 @@ public class Controller {
 				tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
 			}
 		} catch (SQLException e) {
-			 mainView.setAlerta(
+			 DialogosPantalla.showError(
 		                "No se pudieron cargar las tareas desde la base de datos.\n\n" +
 		                "Posibles causas:\n" +
 		                "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
@@ -666,7 +666,7 @@ public class Controller {
 	        try {
 	            conn.close();
 	        } catch (SQLException e) {
-	        	mainView.setAlerta(
+	        	DialogosPantalla.showError(
 	                    "No se pudo cerrar correctamente la conexión con la base de datos.\n\n" +
 	                    "Tus datos no se han perdido. Este error no afecta el funcionamiento de la aplicación.\n\n" +
 	                    "Qué puedes hacer:\n" +
