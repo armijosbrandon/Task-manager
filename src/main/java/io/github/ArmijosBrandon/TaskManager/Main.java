@@ -1,10 +1,10 @@
 package io.github.ArmijosBrandon.TaskManager;
 
-import io.github.ArmijosBrandon.TaskManager.MainView;
-import io.github.ArmijosBrandon.TaskManager.Model;
-import io.github.ArmijosBrandon.TaskManager.Controller;
+
+import java.sql.SQLException;
+
 import javafx.application.Application;
-import javafx.scene.Scene;
+
 
 import javafx.stage.Stage;
 
@@ -12,8 +12,20 @@ import javafx.stage.Stage;
 public class Main extends Application {
     @Override
     public void start(Stage stage) {   
-        Controller controller = null; 
-
+        
+    	try {
+			DataBaseManager.getInstance().connect(); //abrimos una conexion a la base de datos global
+		} catch (SQLException e) {
+			DialogosPantalla.showError(
+	                "No se pudo conectar con la base de datos.\n\n" +
+	                "Detalles: " + e.getMessage() + "\n\n" +
+	                "Posibles soluciones:\n" +
+	                "• Verifica que tienes permisos para crear archivos en esta carpeta.\n" +
+	                "• Asegúrate de que el archivo 'TaskManager.db' no esté corrupto.\n" +
+	                "• Cierra y vuelve a abrir la aplicación.");
+		}
+    	
+    	Controller controller = null; 
         try {
             Model model = new Model();
             MainView view = new MainView(stage);

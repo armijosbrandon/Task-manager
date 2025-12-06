@@ -18,10 +18,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import jdk.javadoc.doclet.Reporter;
 
 public class Controller {
 	private Model model;
 	private MainView mainView;
+	//-----CONEXION CON BASE DE DATOS
+	private Connection conn;
+	private TareasRepository repoTareas;
+	
 	//-----TABLA DE TAREAS 
 	private TablaTareasView tabla_tareas;
 	
@@ -57,11 +62,13 @@ public class Controller {
 
 
 	
+	
 	public Controller(Model model, MainView mainView) {
 		this.model=model;
 		this.mainView=mainView;
 		
 		inicializarConexion();//conecta a la base de datos
+		repoTareas = new TareasRepository(conn);
         inicializarTablas();//crea tablas si no existen
         inicializarFormularios();
         cargarCategorias(); //carga las categorias comunes del usuario
@@ -76,16 +83,20 @@ public class Controller {
 	//------------ CREACIÓN DE TABLAS ------------------------------------------------
     private void inicializarTablas() {
         try {
-            model.crearTablaTareas();
-            model.crearTablaCategorias();
-            model.CrearTablaBusqueda();
+         DataBaseManager.getInstance().iniciarBaseDatos();
         } catch (SQLException e) {
-            DialogosPantalla.showError(
-                "No se pudo crear/verificar la tabla de tareas.\n\n" +
-                "Detalles: " + e.getMessage() + "\n\n" +
-                "Esto suele ocurrir solo la primera vez si hay un problema con la base de datos.\n" +
-                "Solución: Cierra la aplicación. Si el error persiste, borra el archivo 'TaskManager.db'."
-            );
+        	DialogosPantalla.showError(
+                    "No se pudieron cargar las tareas desde la base de datos.\n\n" +
+                    "Detalles: " + e.getMessage() + "\n\n" +
+                    "Esto puede deberse a:\n" +
+                    "• La base de datos está dañada.\n" +
+                    "• La tabla 'Tareas' no existe o fue eliminada.\n" +
+                    "• Un error inesperado interno de SQLite.\n\n" +
+                    "Solución recomendada:\n" +
+                    "1. Cierra la aplicación.\n" +
+                    "2. Borra el archivo 'TaskManager.db'.\n" +
+                    "3. Inicia nuevamente el programa para que se regenere automáticamente."
+                );
         }
     }
 
@@ -166,7 +177,7 @@ public class Controller {
         	if(tarea_activa!=null) {
         		if(DialogosPantalla.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
             		try {
-        				model.borrarTarea(tarea_activa);
+        				repoTareas.borrarTarea(tarea_activa);
         				tabla_tareas.refrescar();
         				cargarCategorias();//volvemos a vincular las categorias a el textfield
         				if(tabla_tareas.getContenido().isEmpty()) {
@@ -199,7 +210,7 @@ public class Controller {
         	if(tarea_activa!=null) {
 	        	tarea_activa=tabla_tareas.getTareaSeleccionada();
 	        	try {
-					model.MarcarProgresoTarea(tarea_activa);
+					repoTareas.marcarProgresoTarea(tarea_activa);
 				} catch (SQLException e1) {
 					DialogosPantalla.showError(
 						    "No se pudo actualizar el estado de la tarea.\n\n" +
@@ -225,7 +236,7 @@ public class Controller {
         	if(tarea_activa!=null) {
 	        	tarea_activa=tabla_tareas.getTareaSeleccionada();
 	        	try {
-					model.MarcarCompletaTarea(tarea_activa);
+					repoTareas.marcarCompletaTarea(tarea_activa);
 				} catch (SQLException e1) {
 					DialogosPantalla.showError(
 						    "No se pudo actualizar el estado de la tarea.\n\n" +
@@ -327,7 +338,7 @@ public class Controller {
         			tabla_tareas.limpiarTabla(); //limpiamos para que no se acumule la lista de las tareas obtenidas con las de la tabla original
         			inicializarTareasTabla();
         		}else {
-        			ObservableList<Tarea>tareas_filtradas= model.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados);
+        			ObservableList<Tarea>tareas_filtradas= repoTareas.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados);
         			if(!tareas_filtradas.isEmpty()) {
         				
         				tabla_tareas.remplazarContenido(tareas_filtradas);
@@ -372,31 +383,31 @@ public class Controller {
         	if (DialogosPantalla.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
         		try {
         			borrarTareas();
-        			model.nuevaTarea("Estudiar matemáticas", LocalDate.of(2025,1,10), LocalDate.of(2025,1,12), "Estudios", "Alta", "Pendiente", "Repasar ecuaciones y álgebra");
-        			model.nuevaTarea("Comprar víveres", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Hogar", "Media", "Pendiente", "Comprar arroz, leche y verduras");
-        			model.nuevaTarea("Llamar al médico", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Salud", "Alta", "Pendiente", "Solicitar cita de control");
-        			model.nuevaTarea("Preparar presentación", LocalDate.of(2025,1,10), LocalDate.of(2025,1,15), "Trabajo", "Alta", "En progreso", "Avanzar diapositivas");
-        			model.nuevaTarea("Hacer ejercicio", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Personal", "Baja", "Completada", "30 minutos de cardio");
-        			model.nuevaTarea("Leer libro de Java", LocalDate.of(2025,1,3), LocalDate.of(2025,1,20), "Estudios", "Media", "En progreso", "Capítulo sobre colecciones");
-        			model.nuevaTarea("Organizar escritorio", LocalDate.of(2025,1,6), LocalDate.of(2025,1,6), "Hogar", "Baja", "Pendiente", "Ordenar cables y papeles");
-        			model.nuevaTarea("Enviar currículum", LocalDate.of(2025,1,14), LocalDate.of(2025,1,14), "Trabajo", "Alta", "Pendiente", "Enviar a 3 empresas");
-        			model.nuevaTarea("Limpiar la cocina", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Pendiente", "Fregar platos y limpiar estufa");
-        			model.nuevaTarea("Vaciar papeleras", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Baja", "Pendiente", "Todas las habitaciones");
-        			model.nuevaTarea("Actualizar portafolio", LocalDate.of(2025,1,18), LocalDate.of(2025,1,18), "Trabajo", "Alta", "En progreso", "Agregar proyecto JavaFX");
-        			model.nuevaTarea("Planificar viaje", LocalDate.of(2025,1,25), LocalDate.of(2025,1,30), "Personal", "Media", "Pendiente", "Buscar hoteles y vuelos");
-        			model.nuevaTarea("Revisar correo", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Trabajo", "Baja", "Completada", "Limpiar bandeja de entrada");
-        			model.nuevaTarea("Practicar guitarra", LocalDate.of(2025,1,4), LocalDate.of(2025,1,4), "Personal", "Baja", "Pendiente", "Aprender nuevo acorde");
-        			model.nuevaTarea("Hacer copia de seguridad", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Tecnología", "Alta", "Pendiente", "Respaldar documentos");
-        			model.nuevaTarea("Pagar servicios", LocalDate.of(2025,1,9), LocalDate.of(2025,1,9), "Hogar", "Alta", "Pendiente", "Luz y agua");
-        			model.nuevaTarea("Regar plantas", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Media", "Completada", "Regar todas las macetas");
-        			model.nuevaTarea("Revisar proyecto Java", LocalDate.of(2025,1,6), LocalDate.of(2025,1,7), "Estudios", "Alta", "En progreso", "Corregir errores");
-        			model.nuevaTarea("Ver tutorial de SQL", LocalDate.of(2025,1,11), LocalDate.of(2025,1,11), "Estudios", "Media", "Pendiente", "FTS5 y triggers");
-        			model.nuevaTarea("Ordenar archivos del PC", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Tecnología", "Baja", "Pendiente", "Eliminar duplicados");
-        			model.nuevaTarea("Sacar al perro", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Completada", "Paseo de 20 min");
-        			model.nuevaTarea("Estudiar inglés", LocalDate.of(2025,1,13), LocalDate.of(2025,1,20), "Estudios", "Alta", "En progreso", "Repasar vocabulario");
-        			model.nuevaTarea("Revisar finanzas", LocalDate.of(2025,1,16), LocalDate.of(2025,1,16), "Personal", "Alta", "Pendiente", "Organizar gastos del mes");
-        			model.nuevaTarea("Limpiar coche", LocalDate.of(2025,1,19), LocalDate.of(2025,1,19), "Hogar", "Baja", "Pendiente", "Aspirar asientos");
-        			model.nuevaTarea("Escribir ideas de proyecto", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Trabajo", "Media", "Pendiente", "Anotar nuevas funciones");
+        			repoTareas.nuevaTarea("Estudiar matemáticas", LocalDate.of(2025,1,10), LocalDate.of(2025,1,12), "Estudios", "Alta", "Pendiente", "Repasar ecuaciones y álgebra");
+        			repoTareas.nuevaTarea("Comprar víveres", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Hogar", "Media", "Pendiente", "Comprar arroz, leche y verduras");
+        			repoTareas.nuevaTarea("Llamar al médico", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Salud", "Alta", "Pendiente", "Solicitar cita de control");
+        			repoTareas.nuevaTarea("Preparar presentación", LocalDate.of(2025,1,10), LocalDate.of(2025,1,15), "Trabajo", "Alta", "En progreso", "Avanzar diapositivas");
+        			repoTareas.nuevaTarea("Hacer ejercicio", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Personal", "Baja", "Completada", "30 minutos de cardio");
+        			repoTareas.nuevaTarea("Leer libro de Java", LocalDate.of(2025,1,3), LocalDate.of(2025,1,20), "Estudios", "Media", "En progreso", "Capítulo sobre colecciones");
+        			repoTareas.nuevaTarea("Organizar escritorio", LocalDate.of(2025,1,6), LocalDate.of(2025,1,6), "Hogar", "Baja", "Pendiente", "Ordenar cables y papeles");
+        			repoTareas.nuevaTarea("Enviar currículum", LocalDate.of(2025,1,14), LocalDate.of(2025,1,14), "Trabajo", "Alta", "Pendiente", "Enviar a 3 empresas");
+        			repoTareas.nuevaTarea("Limpiar la cocina", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Pendiente", "Fregar platos y limpiar estufa");
+        			repoTareas.nuevaTarea("Vaciar papeleras", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Baja", "Pendiente", "Todas las habitaciones");
+        			repoTareas.nuevaTarea("Actualizar portafolio", LocalDate.of(2025,1,18), LocalDate.of(2025,1,18), "Trabajo", "Alta", "En progreso", "Agregar proyecto JavaFX");
+        			repoTareas.nuevaTarea("Planificar viaje", LocalDate.of(2025,1,25), LocalDate.of(2025,1,30), "Personal", "Media", "Pendiente", "Buscar hoteles y vuelos");
+        			repoTareas.nuevaTarea("Revisar correo", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Trabajo", "Baja", "Completada", "Limpiar bandeja de entrada");
+        			repoTareas.nuevaTarea("Practicar guitarra", LocalDate.of(2025,1,4), LocalDate.of(2025,1,4), "Personal", "Baja", "Pendiente", "Aprender nuevo acorde");
+        			repoTareas.nuevaTarea("Hacer copia de seguridad", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Tecnología", "Alta", "Pendiente", "Respaldar documentos");
+        			repoTareas.nuevaTarea("Pagar servicios", LocalDate.of(2025,1,9), LocalDate.of(2025,1,9), "Hogar", "Alta", "Pendiente", "Luz y agua");
+        			repoTareas.nuevaTarea("Regar plantas", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Media", "Completada", "Regar todas las macetas");
+        			repoTareas.nuevaTarea("Revisar proyecto Java", LocalDate.of(2025,1,6), LocalDate.of(2025,1,7), "Estudios", "Alta", "En progreso", "Corregir errores");
+        			repoTareas.nuevaTarea("Ver tutorial de SQL", LocalDate.of(2025,1,11), LocalDate.of(2025,1,11), "Estudios", "Media", "Pendiente", "FTS5 y triggers");
+        			repoTareas.nuevaTarea("Ordenar archivos del PC", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Tecnología", "Baja", "Pendiente", "Eliminar duplicados");
+        			repoTareas.nuevaTarea("Sacar al perro", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Completada", "Paseo de 20 min");
+        			repoTareas.nuevaTarea("Estudiar inglés", LocalDate.of(2025,1,13), LocalDate.of(2025,1,20), "Estudios", "Alta", "En progreso", "Repasar vocabulario");
+        			repoTareas.nuevaTarea("Revisar finanzas", LocalDate.of(2025,1,16), LocalDate.of(2025,1,16), "Personal", "Alta", "Pendiente", "Organizar gastos del mes");
+        			repoTareas.nuevaTarea("Limpiar coche", LocalDate.of(2025,1,19), LocalDate.of(2025,1,19), "Hogar", "Baja", "Pendiente", "Aspirar asientos");
+        			repoTareas.nuevaTarea("Escribir ideas de proyecto", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Trabajo", "Media", "Pendiente", "Anotar nuevas funciones");
         			cargarCategorias();
         		} catch (SQLException e1) {
         			DialogosPantalla.showError(
@@ -446,7 +457,7 @@ public class Controller {
         btnGuardarTarea.setOnAction(e -> {
         	obtenerElementosForm();
             try {
-                model.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);//dentro de ese metodo si la categoria es nueva se añade
+                repoTareas.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);//dentro de ese metodo si la categoria es nueva se añade
                 cargarCategorias();//volvemos a vincular las categorias a el textfield
                 
                 form.setVisible(false);
@@ -474,7 +485,7 @@ public class Controller {
         	obtenerElementosForm();
         	num_tarea=tarea_activa.getNum();
         	try {
-				model.actualizarCampos(num_tarea,nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);
+        		repoTareas.actualizarCampos(num_tarea,nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);
 				form.setVisible(false);
 	            form.setManaged(false);
 	            tabla_tareas.refrescar();
@@ -506,7 +517,7 @@ public class Controller {
 
 	private void borrarTareas() throws SQLException {
 		tabla_tareas.limpiarTabla();
-		model.borrarTareas();
+		repoTareas.vaciarTablas();
 		tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
 	}
 
@@ -547,42 +558,20 @@ public class Controller {
 	}
 
 	private void inicializarConexion() {
-        try {
-            model.setConnection(model.connect());  
-        } catch (SQLException e) {
-            DialogosPantalla.showError(
-                "No se pudo conectar con la base de datos.\n\n" +
-                "Detalles: " + e.getMessage() + "\n\n" +
-                "Posibles soluciones:\n" +
-                "• Verifica que tienes permisos para crear archivos en esta carpeta.\n" +
-                "• Asegúrate de que el archivo 'TaskManager.db' no esté corrupto.\n" +
-                "• Cierra y vuelve a abrir la aplicación."
-            );
-        }
+        conn= DataBaseManager.getInstance().getConnection();
     }
+	
 	public void inicializarTareasTabla() {
 		//obtener tabla con tareas actuales en la bd
 		tabla_tareas= mainView.getTablaTareasView();
-		
+		//vincula una lista para la tabla donde va a cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
 		try {
-			//vincula una lista para la tabla donde va a cargar celdas, va a hacer un for interno por cada tarea al cual le va a hacer los gettes establecidos en cada columna
-			tabla_tareas.setContenidoPrincipal(model.obtenerTareas());//ademas establece la lista a la que se la va a aplciar los cambios realizados en la tabla
-			if(tabla_tareas.getContenido().isEmpty()) {//para que en operaciones como en la de buscar si es que regresesa a la tabla normal y no hay tareas que cargue el siguiente place holder
-				tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
-			}
+			tabla_tareas.setContenidoPrincipal(repoTareas.obtenerTareas());
 		} catch (SQLException e) {
-			 DialogosPantalla.showError(
-		                "No se pudieron cargar las tareas desde la base de datos.\n\n" +
-		                "Posibles causas:\n" +
-		                "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
-		                "   • La base de datos está corrupta.\n" +
-		                "   • Algún dato almacenado es inválido.\n\n" +
-		                "Qué puedes hacer:\n" +
-		                "   • Cierra y vuelve a abrir la aplicación.\n" +
-		                "   • Asegúrate de que ninguna otra aplicación esté usando la base de datos.\n" +
-		                "   • Si el problema continúa, elimina el archivo 'TaskManager.db'.\n\n" +
-		                "Detalles: " + e.getMessage()
-		     );
+			
+		}//ademas establece la lista a la que se la va a aplciar los cambios realizados en la tabla
+		if(tabla_tareas.getContenido().isEmpty()) {//para que en operaciones como en la de buscar si es que regresesa a la tabla normal y no hay tareas que cargue el siguiente place holder
+			tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
 		}
 	}
 	
@@ -658,21 +647,8 @@ public class Controller {
 	
 	//funcion para cerrar comunicacion cuando se cierra la app
 	public void close() {
-		Connection conn= model.getConnection();
-	    if (conn != null) {
-	        try {
-	            conn.close();
-	        } catch (SQLException e) {
-	        	DialogosPantalla.showError(
-	                    "No se pudo cerrar correctamente la conexión con la base de datos.\n\n" +
-	                    "Tus datos no se han perdido. Este error no afecta el funcionamiento de la aplicación.\n\n" +
-	                    "Qué puedes hacer:\n" +
-	                    "   • Simplemente vuelve a abrir la aplicación.\n" +
-	                    "   • Si el error aparece repetidamente, reinicia tu computadora.\n\n" +
-	                    "Detalles: " + e.getMessage()
-	        	);
-	        }
-	    }
+		
+	  
 	}
 
 
