@@ -15,8 +15,8 @@ import javafx.collections.ObservableList;
 
 //OPERACIONES CRUD CON TABLA TAREAS
 public class TareasRepository {
-	private Connection conn = null;
-	private ObservableList<Tarea> lista_tareas= FXCollections.observableArrayList(); //lista q avisa automaticamente al elemento que se vincule sus cambios.
+	private final Connection conn;
+	private final ObservableList<Tarea> lista_tareas= FXCollections.observableArrayList(); //lista q avisa automaticamente al elemento que se vincule sus cambios.
 	
 	public TareasRepository(Connection conn) {
 		this.conn=conn;

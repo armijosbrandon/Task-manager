@@ -26,6 +26,8 @@ public class Controller {
 	//-----CONEXION CON BASE DE DATOS
 	private Connection conn;
 	private TareasRepository repoTareas;
+	private CategoriasRepository repoCategorias;
+	private SearchRepository repoSearch;
 	
 	//-----TABLA DE TAREAS 
 	private TablaTareasView tabla_tareas;
@@ -68,7 +70,7 @@ public class Controller {
 		this.mainView=mainView;
 		
 		inicializarConexion();//conecta a la base de datos
-		repoTareas = new TareasRepository(conn);
+		inicializarRepos();
         inicializarTablas();//crea tablas si no existen
         inicializarFormularios();
         cargarCategorias(); //carga las categorias comunes del usuario
@@ -103,7 +105,7 @@ public class Controller {
     //------------ CARGA DE CATEGORÍAS ----------------------------------------------
     private void cargarCategorias() {
         try {
-            categorias = model.obtenerCategorias();
+            categorias = repoCategorias.obtenerCategorias();
             
             //para cambiar las sugerencias del autcompletado primero tengo que eliminar las anteriores
             if (autoCategoria != null) {// si no es null
@@ -529,7 +531,7 @@ public class Controller {
     			inicializarTareasTabla();
 
     		}else {
-    			ObservableList<Tarea> tareas_buscadas = model.buscarTareas(Busqueda);
+    			ObservableList<Tarea> tareas_buscadas = repoSearch.buscarTareas(Busqueda);
     			if (!tareas_buscadas.isEmpty()) {
     			    tabla_tareas.remplazarContenido(tareas_buscadas);
     			} else {
@@ -560,6 +562,12 @@ public class Controller {
 	private void inicializarConexion() {
         conn= DataBaseManager.getInstance().getConnection();
     }
+	
+	private void inicializarRepos() {
+		repoTareas = new TareasRepository(conn);
+		repoCategorias=new CategoriasRepository(conn);
+		repoSearch= new SearchRepository(conn);
+	}
 	
 	public void inicializarTareasTabla() {
 		//obtener tabla con tareas actuales en la bd

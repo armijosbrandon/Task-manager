@@ -1,5 +1,6 @@
 package io.github.ArmijosBrandon.TaskManager;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,17 +9,24 @@ import java.time.LocalDate;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+
 //operaciones basadas en busqueda de FST5
 public class SearchRepository {
-public ObservableList<Tarea> buscarTareas(String txtBusqueda) throws SQLException {
-		
-		ObservableList<Tarea> tareas_buscadas= FXCollections.observableArrayList();
+	private final Connection conn;
+	public SearchRepository(Connection conn) {
+		this.conn=conn;
+	}
+	public ObservableList<Tarea> buscarTareas(String txtBusqueda) throws SQLException {
+		ObservableList<Tarea> tareas_buscadas= FXCollections.observableArrayList();//LISTA PARA TAREAS OBTENIDAS
+		//CODIGO SQL
 		String busqueda =
 				"SELECT t.* "+
 				"FROM Tareas t "+
-				"JOIN Tareas_fts tf ON t.num = tf.rowid "+
-				"WHERE Tareas_fts MATCH ?;"
+				"JOIN Tareas_fts tf ON t.num = tf.rowid "+//UNE DONDE EL NUMERO DE TAREA COINCICA CON EL ID DE LA TABLA DE BUSQUEDA
+				"WHERE Tareas_fts MATCH ?;"//CRITERIO DE BUSQUEDA
 				+ "";
+		
+		//EXECUCION DE CODIGO SQL
 		PreparedStatement pstmt=conn.prepareStatement(busqueda);
 		pstmt.setString(1, txtBusqueda+"*"); //"*" activa la busqueda por prefijo o similares
 		
