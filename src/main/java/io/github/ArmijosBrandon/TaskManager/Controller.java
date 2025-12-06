@@ -1,6 +1,5 @@
 package io.github.ArmijosBrandon.TaskManager;
 
-import java.awt.TextField;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -16,8 +15,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
@@ -123,11 +120,11 @@ public class Controller {
     	 
     	 //Form de filtrado y sus elementos
     	 formFiltrarView = new FormFiltrarView();
-         popupCategoria= formFiltrarView.getPopupCategoria();
-         comboCategorias= formFiltrarView.getCategoriaCbox();
-         comboPrioridades= formFiltrarView.getPrioridadCbox();
-         comboEstados=formFiltrarView.getEstadoCbox();
-         columnasCategorias = formFiltrarView.getContCategorias();
+         popupCategoria= formFiltrarView.getPopupCategorias();
+         comboCategorias= formFiltrarView.getCategoriaCombo();
+         comboPrioridades= formFiltrarView.getPrioridadCombo();
+         comboEstados=formFiltrarView.getEstadoCombo();
+         columnasCategorias = formFiltrarView.getCategoriaCheckContainer();
   
     }
 
@@ -322,9 +319,9 @@ public class Controller {
         });
         
         formFiltrarView.getBtnFiltrar().setOnAction(e->{
-        	guardarFiltrosSeleccionados(formFiltrarView.getContPrioridades(),prioridadesSeleccionadas);
-        	guardarFiltrosSeleccionados( formFiltrarView.getContEstados(), estadosSeleccionados);
-        	guardarSeleccionCategorias(formFiltrarView.getContCategorias());
+        	guardarFiltrosSeleccionados(formFiltrarView.getPrioridadCheckContainer(),prioridadesSeleccionadas);
+        	guardarFiltrosSeleccionados( formFiltrarView.getEstadoCheckContainer(), estadosSeleccionados);
+        	guardarSeleccionCategorias(formFiltrarView.getCategoriaCheckContainer());
         	try {
         		if(prioridadesSeleccionadas.isEmpty() && estadosSeleccionados.isEmpty() && categoriasSeleccionadas.isEmpty()) {
         			tabla_tareas.limpiarTabla(); //limpiamos para que no se acumule la lista de las tareas obtenidas con las de la tabla original
