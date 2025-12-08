@@ -10,6 +10,14 @@ import java.util.Set;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
+import io.github.ArmijosBrandon.TaskManager.Data.CategoriasRepository;
+import io.github.ArmijosBrandon.TaskManager.Data.DataBaseManager;
+import io.github.ArmijosBrandon.TaskManager.Data.SearchRepository;
+import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
+import io.github.ArmijosBrandon.TaskManager.model.Tarea;
+import io.github.ArmijosBrandon.TaskManager.view.FormFiltrarView;
+import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
+import io.github.ArmijosBrandon.TaskManager.view.MainView;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -18,10 +26,9 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
-import jdk.javadoc.doclet.Reporter;
+
 
 public class Controller {
-	private Model model;
 	private MainView mainView;
 	//-----CONEXION CON BASE DE DATOS
 	private Connection conn;
@@ -65,8 +72,7 @@ public class Controller {
 
 	
 	
-	public Controller(Model model, MainView mainView) {
-		this.model=model;
+	public Controller( MainView mainView) {
 		this.mainView=mainView;
 		
 		inicializarConexion();//conecta a la base de datos

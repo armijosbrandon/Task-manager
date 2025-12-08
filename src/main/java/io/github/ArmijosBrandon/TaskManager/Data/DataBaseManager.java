@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.ArmijosBrandon.TaskManager.Data;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

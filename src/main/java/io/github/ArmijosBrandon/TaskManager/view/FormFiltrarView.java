@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.ArmijosBrandon.TaskManager.view;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import javafx.scene.control.*;

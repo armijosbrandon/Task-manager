@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.ArmijosBrandon.TaskManager.view;
 
 
 import javafx.scene.Scene;
@@ -7,6 +7,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import org.kordamp.ikonli.javafx.FontIcon;
+
+import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 
 
 
