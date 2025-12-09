@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.ArmijosBrandon.TaskManager.controller;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,6 +10,8 @@ import java.util.Set;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
+import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
+import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 import io.github.ArmijosBrandon.TaskManager.Data.CategoriasRepository;
 import io.github.ArmijosBrandon.TaskManager.Data.DataBaseManager;
 import io.github.ArmijosBrandon.TaskManager.Data.SearchRepository;
@@ -76,8 +78,9 @@ public class Controller {
 		this.mainView=mainView;
 		
 		inicializarConexion();//conecta a la base de datos
+		inicializarTablas();//crea tablas si no existen
 		inicializarRepos();
-        inicializarTablas();//crea tablas si no existen
+        
         inicializarFormularios();
         cargarCategorias(); //carga las categorias comunes del usuario
         inicializarTareasTabla();
@@ -90,6 +93,7 @@ public class Controller {
 	
 	//------------ CREACIÓN DE TABLAS ------------------------------------------------
     private void inicializarTablas() {
+    	System.out.println(">>> inicializarTablas() ejecutado");
         try {
          DataBaseManager.getInstance().iniciarBaseDatos();
         } catch (SQLException e) {
