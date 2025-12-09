@@ -46,53 +46,38 @@ public class Controller {
 	
 	
 	
-	//elementos del form
-	private int num_tarea;
-	private String nombre_tarea;
-	private LocalDate fecha_inicio;
-	private LocalDate fecha_final;
-	private String prioridad;
-	private String estado;
-	private String categoria;
-	private String observacion;
-	private Tarea  tarea_activa;
-	
 	
 	private FormFiltrarView formFiltrarView;
-	private Popup popupCategoria;
-	private Popup popupPrioridades;
-	private Popup popupEstados;
-	private HBox columnasCategorias;
-	private ComboBox<String> comboCategorias;
-	private ComboBox<String> comboPrioridades;
-	private ComboBox<String> comboEstados;
-	private Set<String> categoriasSeleccionadas = new HashSet<>();//coleccion que no permite elementos repetidos
-	private Set<String> prioridadesSeleccionadas = new HashSet<>();
-	private Set<String> estadosSeleccionados = new HashSet<>();
+	
+	
 
 	private ControladorTareas controladorTareas;
+	ControladorFiltros controladorFiltros;
 
 	
 	
 	public Controller( MainView mainView) {
-		this.mainView=mainView;
+		this.mainView=mainView; //vista principal del programa
 		
+		//base de datos
 		inicializarConexion();//conecta a la base de datos
 		inicializarTablas();//crea tablas si no existen
 		inicializarRepos();
         
         inicializarFormularios();
-        inicializarTareasTabla();
+        inicializarTareasTabla(); //cargar tareas de la base a la tabla
         
+        inicializarControladores();
         inicializarEventosBotones(); //cargar los eventos de los botones
        
-        inicialiizarControladores();
+        
         
         
 	}
 	
-	private void inicialiizarControladores() {
+	private void inicializarControladores() {
 		controladorTareas= new ControladorTareas(tabla_tareas, form, repoTareas, repoCategorias);
+		controladorFiltros= new ControladorFiltros(formFiltrarView, tabla_tareas, repoTareas);
 		
 		
 	}
@@ -123,11 +108,7 @@ public class Controller {
     	 
     	 //Form de filtrado y sus elementos
     	 formFiltrarView = new FormFiltrarView();
-         popupCategoria= formFiltrarView.getPopupCategorias();
-         comboCategorias= formFiltrarView.getCategoriaCombo();
-         comboPrioridades= formFiltrarView.getPrioridadCombo();
-         comboEstados=formFiltrarView.getEstadoCombo();
-         columnasCategorias = formFiltrarView.getCategoriaCheckContainer();
+         
   
     }
 
@@ -157,116 +138,12 @@ public class Controller {
         //boton de filtrar
         mainView.getBtnFiltrarTarea().setOnAction(e->{
         	Button btnFiltrar=mainView.getBtnFiltrarTarea();
-        	formFiltrarView.setAutoHide(true);//hacer que se cierre al clickear fuera de el
-        	if (!formFiltrarView.isShowing()) {//solo mostrar si no se esta mostrando, para evitar que espame el boton y salgan muchas
-        		 formFiltrarView.show(btnFiltrar,//objeto de referencia para posicion del popup
-        				 btnFiltrar.localToScreen(0, btnFiltrar.getHeight()).getX(),//0 px desde el boton en x
-        				 btnFiltrar.localToScreen(0, btnFiltrar.getHeight()).getY());
-        	    }
+        	controladorFiltros.mostrarPopUpFiltrar(btnFiltrar);
         	});
  
         
    //----------------------BOTONES DE FILTRADO-------------------
-        comboCategorias.setOnMouseClicked(e -> {
-        	
-        	ObservableList<String> categorias= controladorTareas.getCategorias();
-        	// --- GUARDAR SELECCIÓNES ANTERIORES SI ES QUE HAY ANTES DE LIMPIAR ---
-        	guardarSeleccionCategorias(columnasCategorias);
-
-        	// --- TOGGLE DEL POPUP ---
-        	popupCategoria.getContent().clear();
-
-        	if (popupCategoria.isShowing()) {
-        		popupCategoria.hide();
-        		return;
-        	}
-
-        	
-        	int totalCategorias =  categorias.size();
-        	int categoriasPorColumna = 5;
-
-        	// número de columnas necesarias
-        	//int math.ceil() redondea hacia arriba un resultado en decimal de una division y lo convierte a int
-        	int columnas = (int) Math.ceil((double) totalCategorias / categoriasPorColumna); //(double) totalCategorias convierte a double totalCategorias para obtener un resultado en decimal
-        	columnasCategorias.getChildren().clear();
-
-        	for (int col = 0; col < columnas; col++) {
-
-        		int desde = col * categoriasPorColumna;
-        		int hasta = Math.min(desde + categoriasPorColumna, totalCategorias);
-
-        		List<String> categoriasEnColumna = categorias.subList(desde, hasta);
-
-        		VBox columna = new VBox(5);
-
-        		for (String categoria : categoriasEnColumna) {
-        			CheckBox check = new CheckBox(categoria);
-        			check.setSelected(categoriasSeleccionadas.contains(categoria)); // Si categorias Seleccionadas contiene esa categoria, marca al checkbox, si no , lo deja desactivado
-        			columna.getChildren().add(check);
-        		}
-
-        		columnasCategorias.getChildren().add(columna);
-        	}
-
-        	// --- MOSTRAR POPUP ---
-        	popupCategoria.getContent().add(columnasCategorias);
-        	popupCategoria.setAutoHide(true);
-        	popupCategoria.show(
-        			comboCategorias,
-        			comboCategorias.localToScreen(0, comboCategorias.getHeight()).getX(),
-        			comboCategorias.localToScreen(0, comboCategorias.getHeight()).getY()
-        			);
-        });
         
-        comboPrioridades.setOnMouseClicked(e->{
-        	popupPrioridades= formFiltrarView.getPopupPrioridades();
-        	mostrarPopupDebajo(popupPrioridades, comboPrioridades);
-        });
-        
-        comboEstados.setOnMouseClicked(e->{
-        	popupEstados= formFiltrarView.getPopupEstados();
-        	mostrarPopupDebajo(popupEstados, comboEstados);
-        });
-        
-        formFiltrarView.getBtnFiltrar().setOnAction(e->{
-        	guardarFiltrosSeleccionados(formFiltrarView.getPrioridadCheckContainer(),prioridadesSeleccionadas);
-        	guardarFiltrosSeleccionados( formFiltrarView.getEstadoCheckContainer(), estadosSeleccionados);
-        	guardarSeleccionCategorias(formFiltrarView.getCategoriaCheckContainer());
-        	try {
-        		if(prioridadesSeleccionadas.isEmpty() && estadosSeleccionados.isEmpty() && categoriasSeleccionadas.isEmpty()) {
-        			tabla_tareas.limpiarTabla(); //limpiamos para que no se acumule la lista de las tareas obtenidas con las de la tabla original
-        			inicializarTareasTabla();
-        		}else {
-        			ObservableList<Tarea>tareas_filtradas= repoTareas.filtrarTabla(categoriasSeleccionadas, prioridadesSeleccionadas, estadosSeleccionados);
-        			if(!tareas_filtradas.isEmpty()) {
-        				
-        				tabla_tareas.remplazarContenido(tareas_filtradas);
-        			}else {
-        				tabla_tareas.limpiarTabla();
-        				tabla_tareas.setPlaceHolder("No hay ninguna tarea que coincida con esos criterios.");
-        			}
-        			
-        			
-        		}
-				
-			} catch (SQLException e1) {
-				DialogosPantalla.showError(
-					    "No se pudieron obtener las tareas filtradas desde la base de datos.\n\n" +
-					    "Posibles causas:\n" +
-					    "   • La conexión con la base de datos falló o está cerrada.\n" +
-					    "   • Alguno de los filtros seleccionados no coincide con los valores almacenados.\n" +
-					    "   • El archivo 'TaskManager.db' está dañado o bloqueado por otro programa.\n" +
-					    "   • Existen valores nulos o inesperados en las columnas 'categoria', 'prioridad' o 'estado'.\n\n" +
-					    "Qué puedes hacer:\n" +
-					    "   • Verifica que la base de datos no esté siendo usada por otra aplicación.\n" +
-					    "   • Asegúrate de seleccionar filtros válidos.\n" +
-					    "   • Reinicia la aplicación y vuelve a intentar.\n" +
-					    "   • Si el problema persiste, elimina 'TaskManager.db' para regenerarlo.\n\n" +
-					    "Detalles técnicos:\n" + e1.getMessage()
-					);
-			}
-        	
-        });
         
 
 //----------------------BOTON DE BUSQUEDA-------------------
@@ -346,47 +223,7 @@ public class Controller {
 		}
 	}
 	
-	
-	public void mostrarPopupDebajo(Popup popup, ComboBox<String> dueño) {
-	    // Si ya está abierto → cerrarlo (toggle)
-	    if (popup.isShowing()) {
-	        popup.hide();
-	        return;
-	    }
-
-	    popup.setAutoHide(true);
-	    popup.show(dueño, dueño.localToScreen(0,dueño.getHeight()).getX(),
-	    		dueño.localToScreen(0,dueño.getHeight()).getY()
-    		);
-	}
-	
-	private void guardarSeleccionCategorias(HBox columnasCategorias) {
-	    categoriasSeleccionadas.clear();//Antes de guardar las nuevas selecciones, borra las anteriores
-	    for (Node colNode : columnasCategorias.getChildren()) {//recorro cada columna
-	        if (colNode instanceof VBox col) { //verifica que sea un vbox
-	            for (Node node : col.getChildren()) {//reccore cada checkbox
-	                if (node instanceof CheckBox cb && cb.isSelected()) {//si es un checkbox y esta seleccionado
-	                    categoriasSeleccionadas.add(cb.getText());
-	                }
-	            }
-	        }
-	    }
-	}
-	
-	private void guardarFiltrosSeleccionados(VBox contenedor, Set<String> filtros_seleccionados) {
-		filtros_seleccionados.clear();
-		
-		for(Node node:contenedor.getChildren()) {
-			if(node instanceof CheckBox cb && cb.isSelected()) {
-				filtros_seleccionados.add(cb.getText());
-				
-			}
-		}
-	}
-
-
-	
-	//funcion para cerrar comunicacion cuando se cierra la app
+		//funcion para cerrar comunicacion cuando se cierra la app
 	public void close() {
 		try {
 			DataBaseManager.getInstance().close();

@@ -21,7 +21,7 @@ public class ControladorTareas {
 	private TareasRepository repoTareas;
 	private CategoriasRepository repoCategorias;
 	private Tarea tarea_activa;
-	private ObservableList<String> categorias = null;
+	private static ObservableList<String> categorias = null;
 	private AutoCompletionBinding<String> autoCategoria;
 	
 	public ControladorTareas(TablaTareasView tabla_tareas, FormularioTareasView form, TareasRepository repoTareas, CategoriasRepository repoCategorias) {
@@ -151,7 +151,7 @@ public class ControladorTareas {
         
     }
 	
-	public ObservableList<String> getCategorias(){
+	public static ObservableList<String> getCategorias(){
 		return categorias;
 		
 	}
