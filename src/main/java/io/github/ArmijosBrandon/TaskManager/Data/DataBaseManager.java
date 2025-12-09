@@ -44,7 +44,6 @@ public class DataBaseManager {
 	
 	private void crearTablaTareas() throws SQLException {
 		//CODIGO SQL
-		System.out.println(">>> creando tabla Tareas");
 		String sql ="CREATE TABLE IF NOT EXISTS Tareas (" +//solo crea la tabla si no existe
 					"num INTEGER PRIMARY KEY AUTOINCREMENT," +
 					"tarea_nombre TEXT," +
@@ -63,7 +62,6 @@ public class DataBaseManager {
 	
 	private void crearTablaCategorias() throws SQLException {
 		//-----CODIGO SQL
-		System.out.println(">>> creando tabla categoriass");
 		String sql ="CREATE TABLE IF NOT EXISTS Categorias (nombre text primary key);";
 		
 		//---------------TRIGGERS DE CATEOGRIA CON TAREAS
@@ -111,8 +109,6 @@ public class DataBaseManager {
 	}
 	
 	private void crearTablaBusqueda() throws SQLException {
-		
-		System.out.println(">>> creando tabla busqueda");
 		//tabla virutal: tabla que usa modulos especiales para funciones especificas,  en este caso usa el módulo FTS5 para buscar texto
 		//fts5 es un motor de busqueda de texto para encontrar palabras dentro de textos largos similar a un indice fulltext en sql que se aplicara en las dos columnas dadas
 		// tokenize='porter' le indica al motor que use el algoritmo Porter Stemmer, que sirve para reducir las palabras a su raíz, ESTUDIAR->ESTUDI.
@@ -159,28 +155,4 @@ public class DataBaseManager {
 	    }
 	}
 	
-	// método debug - ponlo en DataBaseManager
-	public void debugMostrarEstructuraBD() {
-	    try {
-	        System.out.println("=== RUTA BD: " + new java.io.File("TaskManager.db").getAbsolutePath() + " ===");
-	        try (Statement st = conn.createStatement()) {
-	            var rs = st.executeQuery("PRAGMA database_list;");
-	            System.out.println("=== PRAGMA database_list ===");
-	            while (rs.next()) {
-	                System.out.printf("seq=%s name=%s file=%s%n", rs.getString("seq"), rs.getString("name"), rs.getString("file"));
-	            }
-	            rs.close();
-
-	            var rs2 = st.executeQuery("SELECT type, name, sql FROM sqlite_master ORDER BY type, name;");
-	            System.out.println("=== sqlite_master (tables/indexes/triggers) ===");
-	            while (rs2.next()) {
-	                System.out.printf("%s: %s -> %s%n", rs2.getString("type"), rs2.getString("name"), rs2.getString("sql"));
-	            }
-	            rs2.close();
-	        }
-	    } catch (Exception ex) {
-	        ex.printStackTrace();
-	    }
-	}
-
 }

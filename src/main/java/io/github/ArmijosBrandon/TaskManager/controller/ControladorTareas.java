@@ -29,7 +29,7 @@ public class ControladorTareas {
 		this.form=form;
 		this.repoTareas=repoTareas;
 		this.repoCategorias=repoCategorias;
-		
+		cargarCategorias();
 		controladorForms= new ControladorForms(form, tabla_tareas, repoTareas);
 	}
 	
@@ -74,6 +74,57 @@ public class ControladorTareas {
     	
     	
 	}
+	
+	public void marcarTareaEnProgreso() {
+		tarea_activa=tabla_tareas.getTareaSeleccionada();
+    	if(tarea_activa!=null) {
+        	tarea_activa=tabla_tareas.getTareaSeleccionada();
+        	try {
+				repoTareas.marcarProgresoTarea(tarea_activa);
+			} catch (SQLException e1) {
+				DialogosPantalla.showError(
+					    "No se pudo actualizar el estado de la tarea.\n\n" +
+					    "Posibles causas:\n" +
+					    "   • La base de datos está en uso por otro programa.\n" +
+					    "   • El archivo 'TaskManager.db' está dañado.\n" +
+					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
+					    "Recomendaciones:\n" +
+					    "   • Cierra y vuelve a abrir la aplicación.\n" +
+					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
+					    "Detalles técnicos:\n" + e1.getMessage()
+					);
+			}
+        	tabla_tareas.refrescar();
+    	}else {
+    		DialogosPantalla.showError("No hay ninguna fila seleccionada");
+    	}
+	}
+	
+	public void marcarTareaCompletada() {
+		tarea_activa=tabla_tareas.getTareaSeleccionada();
+    	if(tarea_activa!=null) {
+        	tarea_activa=tabla_tareas.getTareaSeleccionada();
+        	try {
+				repoTareas.marcarCompletaTarea(tarea_activa);
+			} catch (SQLException e1) {
+				DialogosPantalla.showError(
+					    "No se pudo actualizar el estado de la tarea.\n\n" +
+					    "Posibles causas:\n" +
+					    "   • La base de datos está en uso por otro programa.\n" +
+					    "   • El archivo 'TaskManager.db' está dañado.\n" +
+					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
+					    "Recomendaciones:\n" +
+					    "   • Cierra y vuelve a abrir la aplicación.\n" +
+					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
+					    "Detalles técnicos:\n" + e1.getMessage()
+					);
+			}
+        	tabla_tareas.refrescar();
+    	}else {
+    		DialogosPantalla.showError("No hay ninguna fila seleccionada");
+    	}
+	}
+	
 	
 	private void cargarCategorias() {
         try {

@@ -45,8 +45,7 @@ public class Controller {
 	private FormularioTareasView form;
 	
 	
-	private ObservableList<String> categorias = null;
-	private AutoCompletionBinding<String> autoCategoria; //guarda la instacia(lista_sugerencias) actal de autocompletado de un TextFields.bindAutoCompletion()
+	
 	//elementos del form
 	private int num_tarea;
 	private String nombre_tarea;
@@ -71,6 +70,7 @@ public class Controller {
 	private Set<String> prioridadesSeleccionadas = new HashSet<>();
 	private Set<String> estadosSeleccionados = new HashSet<>();
 
+	private ControladorTareas controladorTareas;
 
 	
 	
@@ -82,18 +82,23 @@ public class Controller {
 		inicializarRepos();
         
         inicializarFormularios();
-        cargarCategorias(); //carga las categorias comunes del usuario
         inicializarTareasTabla();
         
         inicializarEventosBotones(); //cargar los eventos de los botones
        
+        inicialiizarControladores();
         
         
 	}
 	
+	private void inicialiizarControladores() {
+		controladorTareas= new ControladorTareas(tabla_tareas, form, repoTareas, repoCategorias);
+		
+		
+	}
+
 	//------------ CREACIÓN DE TABLAS ------------------------------------------------
     private void inicializarTablas() {
-    	System.out.println(">>> inicializarTablas() ejecutado");
         try {
          DataBaseManager.getInstance().iniciarBaseDatos();
         } catch (SQLException e) {
@@ -112,31 +117,6 @@ public class Controller {
         }
     }
 
-    //------------ CARGA DE CATEGORÍAS ----------------------------------------------
-    private void cargarCategorias() {
-        try {
-            categorias = repoCategorias.obtenerCategorias();
-            
-            //para cambiar las sugerencias del autcompletado primero tengo que eliminar las anteriores
-            if (autoCategoria != null) {// si no es null
-                autoCategoria.dispose();//se destruye 
-            }
-            autoCategoria =TextFields.bindAutoCompletion(form.getCategoriaTextField(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
-        } catch (SQLException e) {
-            DialogosPantalla.showError(
-                "No se pudieron cargar las categorías desde la base de datos.\n\n" +
-                "Posibles causas:\n" +
-                "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
-                "   • La base de datos está corrupta o inaccesible.\n\n" +
-                "Qué puedes hacer:\n" +
-                "   • Cierra y vuelve a abrir la aplicación.\n" +
-                "   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
-                "   • Si el problema persiste, considera eliminar el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
-                "Detalles técnicos:\n" + e.getMessage()
-            );
-        }
-        
-    }
     
     public void inicializarFormularios() {
     	 form = mainView.getFormularioTareasView();
@@ -155,119 +135,24 @@ public class Controller {
     //------------ EVENTOS DE BOTONES -------------------------------------------------
     private void inicializarEventosBotones() {
         
-    	Button btnGuardarTarea= form.getBtnGuardarTarea();
-    	Button btnComfirmarCambios= form.getBtnConfirmarCambios();
         //evento botón "Nueva Tarea"
-        mainView.getBtnNuevaTarea().setOnAction(e -> {
-        	resetearForm();
-        	btnGuardarTarea.setVisible(true);
-        	btnGuardarTarea.setManaged(true);
-        	btnComfirmarCambios.setVisible(false);
-        	btnComfirmarCambios.setManaged(false);
-            form.setVisible(true);
-            form.setManaged(true);//que no ocupe espacio cuando esté oculto
-        });   
+        mainView.getBtnNuevaTarea().setOnAction(e -> controladorTareas.nuevaTarea());   
         
         //evento de editar tarea seleccionada
-        mainView.getBtnEditarTarea().setOnAction(e->{
-        	if(tabla_tareas.getTareaSeleccionada()!=null) {
-        		llenarFormCampoActivo();
-        		form.setVisible(true);
-            	form.setManaged(true);
-            	btnComfirmarCambios.setVisible(true);
-            	btnComfirmarCambios.setManaged(true);
-            	btnGuardarTarea.setVisible(false);
-            	btnGuardarTarea.setManaged(false);
-        	}else{
-        		DialogosPantalla.showError("Selecciona una fila para poder editar.");
-        	}	
-        });
+        mainView.getBtnEditarTarea().setOnAction(e->controladorTareas.editarTarea());
         
         
-        mainView.getBtnBorrarTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getTareaSeleccionada();
-        	if(tarea_activa!=null) {
-        		if(DialogosPantalla.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
-            		try {
-        				repoTareas.borrarTarea(tarea_activa);
-        				tabla_tareas.refrescar();
-        				cargarCategorias();//volvemos a vincular las categorias a el textfield
-        				if(tabla_tareas.getContenido().isEmpty()) {
-        					tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
-        				}
-        			} catch (SQLException e1) {
-        				DialogosPantalla.showError(
-        					    "No se pudo eliminar la tarea.\n\n" +
-        					    "Posibles causas:\n" +
-        					    "   • La base de datos está en uso por otro programa.\n" +
-        					    "   • El archivo 'TaskManager.db' está dañado.\n" +
-        					    "   • La tarea ya no existe o no pudo accederse.\n\n" +
-        					    "Recomendaciones:\n" +
-        					    "   • Cierra y vuelve a abrir la aplicación.\n" +
-        					    "   • Asegúrate de que la base de datos no esté siendo utilizada.\n\n" +
-        					    "Detalles técnicos:\n" + e1.getMessage()
-        					);
-        			}
-            	}
-        	}else {
-        		DialogosPantalla.showError("No hay ninguna fila seleccionada");
-        	}
-        	
-        	
-        });
+        mainView.getBtnBorrarTarea().setOnAction(e->controladorTareas.eliminarTarea());
         
         //Boton de marcar tarea como "en progreso"
-        mainView.getBtnMarcarProgresoTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getTareaSeleccionada();
-        	if(tarea_activa!=null) {
-	        	tarea_activa=tabla_tareas.getTareaSeleccionada();
-	        	try {
-					repoTareas.marcarProgresoTarea(tarea_activa);
-				} catch (SQLException e1) {
-					DialogosPantalla.showError(
-						    "No se pudo actualizar el estado de la tarea.\n\n" +
-						    "Posibles causas:\n" +
-						    "   • La base de datos está en uso por otro programa.\n" +
-						    "   • El archivo 'TaskManager.db' está dañado.\n" +
-						    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
-						    "Recomendaciones:\n" +
-						    "   • Cierra y vuelve a abrir la aplicación.\n" +
-						    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
-						    "Detalles técnicos:\n" + e1.getMessage()
-						);
-				}
-	        	tabla_tareas.refrescar();
-        	}else {
-        		DialogosPantalla.showError("No hay ninguna fila seleccionada");
-        	}
-        });
+        mainView.getBtnMarcarProgresoTarea().setOnAction(e->controladorTareas.marcarTareaEnProgreso());
         
       //Boton de marcar tarea como "Completada"
-        mainView.getBtnCompletarTarea().setOnAction(e->{
-        	tarea_activa=tabla_tareas.getTareaSeleccionada();
-        	if(tarea_activa!=null) {
-	        	tarea_activa=tabla_tareas.getTareaSeleccionada();
-	        	try {
-					repoTareas.marcarCompletaTarea(tarea_activa);
-				} catch (SQLException e1) {
-					DialogosPantalla.showError(
-						    "No se pudo actualizar el estado de la tarea.\n\n" +
-						    "Posibles causas:\n" +
-						    "   • La base de datos está en uso por otro programa.\n" +
-						    "   • El archivo 'TaskManager.db' está dañado.\n" +
-						    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
-						    "Recomendaciones:\n" +
-						    "   • Cierra y vuelve a abrir la aplicación.\n" +
-						    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
-						    "Detalles técnicos:\n" + e1.getMessage()
-						);
-				}
-	        	tabla_tareas.refrescar();
-        	}else {
-        		DialogosPantalla.showError("No hay ninguna fila seleccionada");
-        	}
-        });
+        mainView.getBtnCompletarTarea().setOnAction(e->controladorTareas.marcarTareaCompletada());
         
+        mainView.getBtnCargarTareasPrueba().setOnAction(e -> controladorTareas.cargarTareasPrueba());
+        
+        mainView.getBtnResetearTareas().setOnAction(e->controladorTareas.resetearTablaTareas());
         
         //boton de filtrar
         mainView.getBtnFiltrarTarea().setOnAction(e->{
@@ -283,6 +168,8 @@ public class Controller {
         
    //----------------------BOTONES DE FILTRADO-------------------
         comboCategorias.setOnMouseClicked(e -> {
+        	
+        	ObservableList<String> categorias= controladorTareas.getCategorias();
         	// --- GUARDAR SELECCIÓNES ANTERIORES SI ES QUE HAY ANTES DE LIMPIAR ---
         	guardarSeleccionCategorias(columnasCategorias);
 
@@ -295,7 +182,7 @@ public class Controller {
         	}
 
         	
-        	int totalCategorias = categorias.size();
+        	int totalCategorias =  categorias.size();
         	int categoriasPorColumna = 5;
 
         	// número de columnas necesarias
@@ -390,148 +277,14 @@ public class Controller {
         	buscarTareas();
         });
         
-// -------------------------BOTONES DE TAREAS DE PRUEBA -----------------
-        mainView.getBtnCargarTareasPrueba().setOnAction(e -> {
-        	if (DialogosPantalla.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
-        		try {
-        			borrarTareas();
-        			repoTareas.nuevaTarea("Estudiar matemáticas", LocalDate.of(2025,1,10), LocalDate.of(2025,1,12), "Estudios", "Alta", "Pendiente", "Repasar ecuaciones y álgebra");
-        			repoTareas.nuevaTarea("Comprar víveres", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Hogar", "Media", "Pendiente", "Comprar arroz, leche y verduras");
-        			repoTareas.nuevaTarea("Llamar al médico", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Salud", "Alta", "Pendiente", "Solicitar cita de control");
-        			repoTareas.nuevaTarea("Preparar presentación", LocalDate.of(2025,1,10), LocalDate.of(2025,1,15), "Trabajo", "Alta", "En progreso", "Avanzar diapositivas");
-        			repoTareas.nuevaTarea("Hacer ejercicio", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Personal", "Baja", "Completada", "30 minutos de cardio");
-        			repoTareas.nuevaTarea("Leer libro de Java", LocalDate.of(2025,1,3), LocalDate.of(2025,1,20), "Estudios", "Media", "En progreso", "Capítulo sobre colecciones");
-        			repoTareas.nuevaTarea("Organizar escritorio", LocalDate.of(2025,1,6), LocalDate.of(2025,1,6), "Hogar", "Baja", "Pendiente", "Ordenar cables y papeles");
-        			repoTareas.nuevaTarea("Enviar currículum", LocalDate.of(2025,1,14), LocalDate.of(2025,1,14), "Trabajo", "Alta", "Pendiente", "Enviar a 3 empresas");
-        			repoTareas.nuevaTarea("Limpiar la cocina", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Pendiente", "Fregar platos y limpiar estufa");
-        			repoTareas.nuevaTarea("Vaciar papeleras", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Baja", "Pendiente", "Todas las habitaciones");
-        			repoTareas.nuevaTarea("Actualizar portafolio", LocalDate.of(2025,1,18), LocalDate.of(2025,1,18), "Trabajo", "Alta", "En progreso", "Agregar proyecto JavaFX");
-        			repoTareas.nuevaTarea("Planificar viaje", LocalDate.of(2025,1,25), LocalDate.of(2025,1,30), "Personal", "Media", "Pendiente", "Buscar hoteles y vuelos");
-        			repoTareas.nuevaTarea("Revisar correo", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Trabajo", "Baja", "Completada", "Limpiar bandeja de entrada");
-        			repoTareas.nuevaTarea("Practicar guitarra", LocalDate.of(2025,1,4), LocalDate.of(2025,1,4), "Personal", "Baja", "Pendiente", "Aprender nuevo acorde");
-        			repoTareas.nuevaTarea("Hacer copia de seguridad", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Tecnología", "Alta", "Pendiente", "Respaldar documentos");
-        			repoTareas.nuevaTarea("Pagar servicios", LocalDate.of(2025,1,9), LocalDate.of(2025,1,9), "Hogar", "Alta", "Pendiente", "Luz y agua");
-        			repoTareas.nuevaTarea("Regar plantas", LocalDate.of(2025,1,3), LocalDate.of(2025,1,3), "Hogar", "Media", "Completada", "Regar todas las macetas");
-        			repoTareas.nuevaTarea("Revisar proyecto Java", LocalDate.of(2025,1,6), LocalDate.of(2025,1,7), "Estudios", "Alta", "En progreso", "Corregir errores");
-        			repoTareas.nuevaTarea("Ver tutorial de SQL", LocalDate.of(2025,1,11), LocalDate.of(2025,1,11), "Estudios", "Media", "Pendiente", "FTS5 y triggers");
-        			repoTareas.nuevaTarea("Ordenar archivos del PC", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Tecnología", "Baja", "Pendiente", "Eliminar duplicados");
-        			repoTareas.nuevaTarea("Sacar al perro", LocalDate.of(2025,1,2), LocalDate.of(2025,1,2), "Hogar", "Media", "Completada", "Paseo de 20 min");
-        			repoTareas.nuevaTarea("Estudiar inglés", LocalDate.of(2025,1,13), LocalDate.of(2025,1,20), "Estudios", "Alta", "En progreso", "Repasar vocabulario");
-        			repoTareas.nuevaTarea("Revisar finanzas", LocalDate.of(2025,1,16), LocalDate.of(2025,1,16), "Personal", "Alta", "Pendiente", "Organizar gastos del mes");
-        			repoTareas.nuevaTarea("Limpiar coche", LocalDate.of(2025,1,19), LocalDate.of(2025,1,19), "Hogar", "Baja", "Pendiente", "Aspirar asientos");
-        			repoTareas.nuevaTarea("Escribir ideas de proyecto", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Trabajo", "Media", "Pendiente", "Anotar nuevas funciones");
-        			cargarCategorias();
-        		} catch (SQLException e1) {
-        			DialogosPantalla.showError(
-        					"No se pudo generar las tareas de prueba en la base de datos.\n\n" +
-        							"Posibles causas:\n" +
-        							"   • La base de datos está siendo usada por otro programa.\n" +
-        							"   • El archivo 'TaskManager.db' está corrupto.\n" +
-        							"   • La tabla 'Tareas' o 'Categorias' no existe o está dañada.\n\n" +
-        							"Qué puedes hacer:\n" +
-        							"   • Cierra y vuelve a abrir la aplicación.\n" +
-        							"   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
-        							"   • Si el problema continúa, elimina el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
-        							"Detalles técnicos:\n" + e1.getMessage()
-        					);
-        		}
-
-        });
-        
-        mainView.getBtnResetearTareas().setOnAction(e->{
-        	if(DialogosPantalla.getConfirmacion("¿Estas seguro de resetear la tabla de tareas?", "Se perderan los cambios y tareas de forma permamente")) {
-        		try {
-					borrarTareas();
-					cargarCategorias();
-				} catch (SQLException e1) {
-					DialogosPantalla.showError(
-	                        "No se pudo resetear la tabla de tareas en la base de datos.\n\n" +
-	                        "Posibles causas:\n" +
-	                        "   • La base de datos está siendo usada por otro programa.\n" +
-	                        "   • El archivo 'TaskManager.db' está corrupto.\n" +
-	                        "   • La tabla 'Tareas' o 'Categorias' no existe o está dañada.\n\n" +
-	                        "Qué puedes hacer:\n" +
-	                        "   • Cierra y vuelve a abrir la aplicación.\n" +
-	                        "   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
-	                        "   • Si el problema continúa, elimina el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
-	                        "Detalles técnicos:\n" + e1.getMessage()
-	                    );
-				}
-        	}
-        	
-        });
 
 
 
         
-//----------------------BOTONES DEL FORM-------------------
-        //evento botón "Guardar Tarea" del form
-        btnGuardarTarea.setOnAction(e -> {
-        	obtenerElementosForm();
-            try {
-                repoTareas.nuevaTarea(nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);//dentro de ese metodo si la categoria es nueva se añade
-                cargarCategorias();//volvemos a vincular las categorias a el textfield
-                
-                form.setVisible(false);
-                form.setManaged(false);
-            } catch (SQLException e1) {
-                DialogosPantalla.showError(
-                    "No se pudo guardar la nueva tarea en la base de datos.\n\n" +
-                    "Posibles causas:\n" +
-                    "   • La base de datos está siendo usada por otro programa.\n" +
-                    "   • El archivo 'TaskManager.db' está corrupto.\n" +
-                    "   • Algún dato ingresado contiene caracteres no válidos.\n" +
-                    "   • La tabla 'Tareas' o 'Categorias' no existe o está dañada.\n\n" +
-                    "Qué puedes hacer:\n" +
-                    "   • Cierra y vuelve a abrir la aplicación.\n" +
-                    "   • Revisa que las fechas ingresadas sean válidas.\n" +
-                    "   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
-                    "   • Si el problema continúa, elimina el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
-                    "Detalles técnicos:\n" + e1.getMessage()
-                );
-            }
-        });
-        
-        //btn comfirmar cambios del form
-        btnComfirmarCambios.setOnAction(e->{
-        	obtenerElementosForm();
-        	num_tarea=tarea_activa.getNum();
-        	try {
-        		repoTareas.actualizarCampos(num_tarea,nombre_tarea, fecha_inicio, fecha_final, categoria, prioridad, estado, observacion);
-				form.setVisible(false);
-	            form.setManaged(false);
-	            tabla_tareas.refrescar();
-	            cargarCategorias();//volvemos a vincular las categorias a el textfield
-        	} catch (SQLException e1) {
-				DialogosPantalla.showError(
-					    "No se pudo actualizar la tarea.\n\n" +
-					    "Posibles causas:\n" +
-					    "   • La tarea no existe o no está seleccionada.\n" +
-					    "   • La base de datos está en uso por otro programa.\n" +
-					    "   • Datos inválidos (fechas o texto incorrecto).\n" +
-					    "   • La tabla 'Tareas' está dañada o no existe.\n\n" +
-					    "Qué puedes hacer:\n" +
-					    "   • Verifica los datos ingresados.\n" +
-					    "   • Asegúrate de que nadie más esté usando la base de datos.\n" +
-					    "   • Reinicia la aplicación.\n\n" +
-					    "Detalles técnicos:\n" + e1.getMessage()
-						);
-			}
-        	
-        });
-        
-        //btn cancelar del formulario
-        form.getBtnCancelar().setOnAction(e->{
-        	form.setVisible(false);
-            form.setManaged(false);
-        });
+
     }
 
-	private void borrarTareas() throws SQLException {
-		tabla_tareas.limpiarTabla();
-		repoTareas.vaciarTablas();
-		tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
-	}
+
 
 	private void buscarTareas() {
 		String Busqueda= mainView.getTxtBusqueda().getText();
@@ -593,36 +346,6 @@ public class Controller {
 		}
 	}
 	
-	private void resetearForm() {
-		form.setNombreTarea("");
-		form.setFechaInicio(LocalDate.now());
-		form.setFechaFinal(LocalDate.now().plusDays(5));
-		form.setCategoria("");
-		form.setObservacion("");
-		
-	}
-	
-	private void obtenerElementosForm() {
-		nombre_tarea = form.getNombreTarea();
-        fecha_inicio = form.getFechaInicio();
-        fecha_final = form.getFechaFinal();
-        prioridad = form.getPrioridad();
-        estado = form.getEstado();
-        categoria = form.getCategoria();
-        observacion = form.getObservacion();
-	}
-	
-	private void llenarFormCampoActivo() {
-		tarea_activa= tabla_tareas.getTareaSeleccionada(); //obtener la tarea activa
-		form.setNombreTarea(tarea_activa.getTareaNombre());
-		form.setFechaInicio(tarea_activa.getFechaInicio());
-		form.setFechaFinal(tarea_activa.getFechaFinal());
-		form.setCategoria(tarea_activa.getCategoria());
-		form.setPrioridad(tarea_activa.getPrioridad());
-		form.setEstado(tarea_activa.getEstado());
-		form.setObservacion(tarea_activa.getObservacion());
-		
-	}
 	
 	public void mostrarPopupDebajo(Popup popup, ComboBox<String> dueño) {
 	    // Si ya está abierto → cerrarlo (toggle)
@@ -665,8 +388,11 @@ public class Controller {
 	
 	//funcion para cerrar comunicacion cuando se cierra la app
 	public void close() {
-		
-	  
+		try {
+			DataBaseManager.getInstance().close();
+		} catch (SQLException e) {
+
+		}
 	}
 
 
