@@ -1,165 +1,169 @@
 package io.github.ArmijosBrandon.TaskManager.controller;
-
-import java.sql.SQLException;
-import java.time.LocalDate;
-
-import org.controlsfx.control.textfield.AutoCompletionBinding;
-import org.controlsfx.control.textfield.TextFields;
-
+//---ARCHIVOS VINCULADOS
 import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
 import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 import io.github.ArmijosBrandon.TaskManager.Data.CategoriasRepository;
+import io.github.ArmijosBrandon.TaskManager.Data.SearchRepository;
 import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
 import io.github.ArmijosBrandon.TaskManager.model.Tarea;
 import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
+
+// --- LIBRERIAS
+import java.sql.SQLException;
+import java.time.LocalDate;
+import org.controlsfx.control.textfield.AutoCompletionBinding; //autocompletado de textfield, use dependencias externas
+import org.controlsfx.control.textfield.TextFields; //componente que se autocompleta,
 import javafx.collections.ObservableList;
 
 public class ControladorTareas {
-	private TablaTareasView tabla_tareas;
-	private FormularioTareasView form;
-	private ControladorForms controladorForms;
-	private TareasRepository repoTareas;
-	private CategoriasRepository repoCategorias;
-	private Tarea tarea_activa;
-	private static ObservableList<String> categorias = null;
-	private AutoCompletionBinding<String> autoCategoria;
 	
-	public ControladorTareas(TablaTareasView tabla_tareas, FormularioTareasView form, TareasRepository repoTareas, CategoriasRepository repoCategorias) {
-		this.tabla_tareas=tabla_tareas;
+	//--VIEWS
+	private final TablaTareasView tablaTareas;
+	private final FormularioTareasView form;
+	
+	//--CONTROLADOR VINCULADO DE FORMS PARA GUARDAD Y EDITAR
+	private final ControladorForms controladorForms;
+	
+	//--UTILES
+	private Tarea tareaActiva;
+	private ObservableList<String> categorias = null;//Lista de categorias que se vincularan a el texfield
+	private AutoCompletionBinding<String> autoCategoria; //para control del autocompletado
+	
+	//--REPOSITORIOS
+	private final TareasRepository repoTareas;
+	private final CategoriasRepository repoCategorias;
+	private final SearchRepository repoSearch;
+	
+	public ControladorTareas(TablaTareasView tablaTareas, FormularioTareasView form, TareasRepository repoTareas, CategoriasRepository repoCategorias,SearchRepository repoSearch) {
+		this.tablaTareas=tablaTareas;
 		this.form=form;
 		this.repoTareas=repoTareas;
 		this.repoCategorias=repoCategorias;
-		cargarCategorias();
-		controladorForms= new ControladorForms(form, tabla_tareas, repoTareas);
+		this.repoSearch = repoSearch;
+		cargarCategorias();//cargamos las categorias de la base de datos al texfield vinculado
+		controladorForms= new ControladorForms(form, tablaTareas, repoTareas);//instancio el controlador y ejecuto sus metodos iniciales
+		
 	}
-	
-	public void nuevaTarea() {
-		controladorForms.mostrarFormNuevaTarea();
-		cargarCategorias();
-	}
-	
-	public void editarTarea() {
-		controladorForms.mostrarFormEditarTarea();
-		cargarCategorias();
-	}
-	
-	public void eliminarTarea() {
-		tarea_activa=tabla_tareas.getTareaSeleccionada();
-    	if(tarea_activa!=null) {
-    		if(DialogosPantalla.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
-        		try {
-    				repoTareas.borrarTarea(tarea_activa);
-    				tabla_tareas.refrescar();
-    				cargarCategorias();//volvemos a vincular las categorias a el textfield
-    				if(tabla_tareas.getContenido().isEmpty()) {
-    					tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
-    				}
-    			} catch (SQLException e1) {
-    				DialogosPantalla.showError(
-    					    "No se pudo eliminar la tarea.\n\n" +
-    					    "Posibles causas:\n" +
-    					    "   • La base de datos está en uso por otro programa.\n" +
-    					    "   • El archivo 'TaskManager.db' está dañado.\n" +
-    					    "   • La tarea ya no existe o no pudo accederse.\n\n" +
-    					    "Recomendaciones:\n" +
-    					    "   • Cierra y vuelve a abrir la aplicación.\n" +
-    					    "   • Asegúrate de que la base de datos no esté siendo utilizada.\n\n" +
-    					    "Detalles técnicos:\n" + e1.getMessage()
-    					);
-    			}
-        	}
-    	}else {
-    		DialogosPantalla.showError("No hay ninguna fila seleccionada");
-    	}
-    	
-    	
-	}
-	
-	public void marcarTareaEnProgreso() {
-		tarea_activa=tabla_tareas.getTareaSeleccionada();
-    	if(tarea_activa!=null) {
-        	tarea_activa=tabla_tareas.getTareaSeleccionada();
-        	try {
-				repoTareas.marcarProgresoTarea(tarea_activa);
-			} catch (SQLException e1) {
-				DialogosPantalla.showError(
-					    "No se pudo actualizar el estado de la tarea.\n\n" +
-					    "Posibles causas:\n" +
-					    "   • La base de datos está en uso por otro programa.\n" +
-					    "   • El archivo 'TaskManager.db' está dañado.\n" +
-					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
-					    "Recomendaciones:\n" +
-					    "   • Cierra y vuelve a abrir la aplicación.\n" +
-					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
-					    "Detalles técnicos:\n" + e1.getMessage()
-					);
-			}
-        	tabla_tareas.refrescar();
-    	}else {
-    		DialogosPantalla.showError("No hay ninguna fila seleccionada");
-    	}
-	}
-	
-	public void marcarTareaCompletada() {
-		tarea_activa=tabla_tareas.getTareaSeleccionada();
-    	if(tarea_activa!=null) {
-        	tarea_activa=tabla_tareas.getTareaSeleccionada();
-        	try {
-				repoTareas.marcarCompletaTarea(tarea_activa);
-			} catch (SQLException e1) {
-				DialogosPantalla.showError(
-					    "No se pudo actualizar el estado de la tarea.\n\n" +
-					    "Posibles causas:\n" +
-					    "   • La base de datos está en uso por otro programa.\n" +
-					    "   • El archivo 'TaskManager.db' está dañado.\n" +
-					    "   • La tarea ya no existe o no pudo modificarse.\n\n" +
-					    "Recomendaciones:\n" +
-					    "   • Cierra y vuelve a abrir la aplicación.\n" +
-					    "   • Verifica que la base de datos no esté siendo utilizada.\n\n" +
-					    "Detalles técnicos:\n" + e1.getMessage()
-					);
-			}
-        	tabla_tareas.refrescar();
-    	}else {
-    		DialogosPantalla.showError("No hay ninguna fila seleccionada");
-    	}
-	}
-	
 	
 	private void cargarCategorias() {
         try {
-            categorias = repoCategorias.obtenerCategorias();
+            categorias = repoCategorias.obtenerCategorias();//obtener de base de datos
             
-            //para cambiar las sugerencias del autcompletado primero tengo que eliminar las anteriores
+            //para cambiar las sugerencias del autocompletado primero tengo que eliminar las anteriores si existen
             if (autoCategoria != null) {// si no es null
                 autoCategoria.dispose();//se destruye 
             }
-            autoCategoria =TextFields.bindAutoCompletion(form.getCategoriaTextField(), categorias); //inicializar autocompletado de categorias obtenido en el metodo anterior
+            autoCategoria =TextFields.bindAutoCompletion(form.getCategoriaTextField(), categorias); //inicializar autocompletado de las categorias
         } catch (SQLException e) {
-            DialogosPantalla.showError(
-                "No se pudieron cargar las categorías desde la base de datos.\n\n" +
-                "Posibles causas:\n" +
-                "   • El archivo 'TaskManager.db' está siendo usado por otro programa.\n" +
-                "   • La base de datos está corrupta o inaccesible.\n\n" +
-                "Qué puedes hacer:\n" +
-                "   • Cierra y vuelve a abrir la aplicación.\n" +
-                "   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
-                "   • Si el problema persiste, considera eliminar el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
-                "Detalles técnicos:\n" + e.getMessage()
-            );
+        	DialogosPantalla.showErrorDB("No se pudieron cargar las categorías.", e);
         }
         
     }
 	
-	public static ObservableList<String> getCategorias(){
-		return categorias;
+	
+	//-------OPEREACIONES CRUD-----
+	//-------------CRUD CON FORMULARIO
+	public void nuevaTarea() {
+		controladorForms.mostrarFormNuevaTarea();
+		cargarCategorias();//recargamos las categorias al textfield
+	}
+	
+	public void editarTarea() {
+		controladorForms.mostrarFormEditarTarea();
+		cargarCategorias();//recargamos las categorias al textfield
+	}
+	
+	//-----OPERACIONES CRUD SIN FORMULARIO Y DE MARCAR TAREAS
+	public void eliminarTarea() {
+		tareaActiva=validarSeleccion();//valido si hay seleccionado algo
+    	if (tareaActiva==null) return;//cancelo este metodo
+    		if(DialogosPantalla.getConfirmacion("¿Estas seguro de eliminar esta tarea?","Se eliminara esta tarea permamentemente")) {
+        		try {
+    				repoTareas.borrarTarea(tareaActiva);
+    				tablaTareas.refrescar();//aves no se carga, por eso refresco manualmente
+    				cargarCategorias();//volvemos a vincular las categorias a el textfield
+    				
+    				//QUE PASA SI NO HAY TAREAS?
+    				if(tablaTareas.getContenido().isEmpty()) {
+    					tablaTareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
+    				}
+    			} catch (SQLException e) {
+    				 DialogosPantalla.showErrorCRUD("No se pudo eliminar la tarea.", e);
+    			}
+        	}
+	}
+	
+	public void buscarTareas(String criterioBusqueda) {
+		
+    	try {
+    		if(criterioBusqueda.trim().isEmpty()) {
+    			tablaTareas.limpiarTabla();
+    			try {
+    				tablaTareas.setContenidoPrincipal(repoTareas.obtenerTareas());
+    			} catch (SQLException e) {
+    				DialogosPantalla.showErrorDB("No se pudo obtener las tareas de la base de datos", e);
+    			}
+    			if(tablaTareas.getContenido().isEmpty()) {//si la tabla  no tiene tareas que cargue el siguiente place holder
+    				tablaTareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
+    			}
+
+    		}else {
+    			ObservableList<Tarea> tareas_buscadas = repoSearch.buscarTareas(criterioBusqueda);
+    			if (!tareas_buscadas.isEmpty()) {
+    			    tablaTareas.remplazarContenido(tareas_buscadas);
+    			} else {
+    			    tablaTareas.setPlaceHolder("No hay resultados.");
+    			    tablaTareas.limpiarTabla();
+    			}
+
+    		}
+			
+		} catch (SQLException e1) {
+			DialogosPantalla.showError(
+				    "No se pudieron obtener las tareas buscadas desde la base de datos.\n\n" +
+				    "Posibles causas:\n" +
+				    "   • La conexión con la base de datos falló o está cerrada.\n" +
+				    "   • El archivo 'TaskManager.db' está dañado o bloqueado por otro programa.\n" +
+				    "   • Existen valores nulos o inesperados en el campo de busqueda" +
+				    "Qué puedes hacer:\n" +
+				    "   • Verifica que la base de datos no esté siendo usada por otra aplicación.\n" +
+				    "   • Asegúrate de seleccionar criterios de busqueda válidos.\n" +
+				    "   • Reinicia la aplicación y vuelve a intentar.\n" +
+				    "   • Si el problema persiste, elimina 'TaskManager.db' para regenerarlo.\n\n" +
+				    "Detalles técnicos:\n" + e1.getMessage()
+				);
+		}
 		
 	}
-
+	
+	public void marcarTareaEnProgreso() {
+		tareaActiva=validarSeleccion();
+    	if (tareaActiva==null) return;//cancelo este metodo
+        	try {
+				repoTareas.marcarProgresoTarea(tareaActiva);
+			} catch (SQLException e) {
+				 DialogosPantalla.showErrorCRUD("No se pudo actualizar la tarea.", e);
+			}
+        	tablaTareas.refrescar();
+	}
+	
+	public void marcarTareaCompletada() {
+		tareaActiva=validarSeleccion();
+    	if (tareaActiva==null) return;//cancelo este metodo
+        	try {
+				repoTareas.marcarCompletaTarea(tareaActiva);
+			} catch (SQLException e) {
+				DialogosPantalla.showErrorCRUD("No se pudo actualizar la tarea.", e);
+			}
+        	tablaTareas.refrescar();
+    	
+	}
+	
+	//----OPERACIONES PARA TAREAS DE PRUEBA Y RESETEAR LA TABLA ENTERA
 	public void cargarTareasPrueba() {
 		if (DialogosPantalla.getConfirmacion("¿Estas seguro de cargar las tareas de prueba?", "Tus tareas personales se borraran de forma permamente"))
     		try {
-    			borrarTareas();
+    			vaciarTablas();
     			repoTareas.nuevaTarea("Estudiar matemáticas", LocalDate.of(2025,1,10), LocalDate.of(2025,1,12), "Estudios", "Alta", "Pendiente", "Repasar ecuaciones y álgebra");
     			repoTareas.nuevaTarea("Comprar víveres", LocalDate.of(2025,1,8), LocalDate.of(2025,1,8), "Hogar", "Media", "Pendiente", "Comprar arroz, leche y verduras");
     			repoTareas.nuevaTarea("Llamar al médico", LocalDate.of(2025,1,5), LocalDate.of(2025,1,5), "Salud", "Alta", "Pendiente", "Solicitar cita de control");
@@ -185,48 +189,37 @@ public class ControladorTareas {
     			repoTareas.nuevaTarea("Revisar finanzas", LocalDate.of(2025,1,16), LocalDate.of(2025,1,16), "Personal", "Alta", "Pendiente", "Organizar gastos del mes");
     			repoTareas.nuevaTarea("Limpiar coche", LocalDate.of(2025,1,19), LocalDate.of(2025,1,19), "Hogar", "Baja", "Pendiente", "Aspirar asientos");
     			repoTareas.nuevaTarea("Escribir ideas de proyecto", LocalDate.of(2025,1,12), LocalDate.of(2025,1,12), "Trabajo", "Media", "Pendiente", "Anotar nuevas funciones");
-    			cargarCategorias();
-    		} catch (SQLException e1) {
-    			DialogosPantalla.showError(
-    					"No se pudo generar las tareas de prueba en la base de datos.\n\n" +
-    							"Posibles causas:\n" +
-    							"   • La base de datos está siendo usada por otro programa.\n" +
-    							"   • El archivo 'TaskManager.db' está corrupto.\n" +
-    							"   • La tabla 'Tareas' o 'Categorias' no existe o está dañada.\n\n" +
-    							"Qué puedes hacer:\n" +
-    							"   • Cierra y vuelve a abrir la aplicación.\n" +
-    							"   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
-    							"   • Si el problema continúa, elimina el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
-    							"Detalles técnicos:\n" + e1.getMessage()
-    					);
+    			cargarCategorias();//recargamos las categorias con el autocompletado
+    		} catch (SQLException e) {
+    			DialogosPantalla.showErrorDB("No se pudo generar las tareas de prueba en la base de datos.",e);				
     		}
 	}
 	
 	public void resetearTablaTareas() {
 		if(DialogosPantalla.getConfirmacion("¿Estas seguro de resetear la tabla de tareas?", "Se perderan los cambios y tareas de forma permamente")) {
     		try {
-				borrarTareas();
-				cargarCategorias();
-			} catch (SQLException e1) {
-				DialogosPantalla.showError(
-                        "No se pudo resetear la tabla de tareas en la base de datos.\n\n" +
-                        "Posibles causas:\n" +
-                        "   • La base de datos está siendo usada por otro programa.\n" +
-                        "   • El archivo 'TaskManager.db' está corrupto.\n" +
-                        "   • La tabla 'Tareas' o 'Categorias' no existe o está dañada.\n\n" +
-                        "Qué puedes hacer:\n" +
-                        "   • Cierra y vuelve a abrir la aplicación.\n" +
-                        "   • Asegúrate de que ningún otro programa esté usando la base de datos.\n" +
-                        "   • Si el problema continúa, elimina el archivo 'TaskManager.db' para crear uno nuevo.\n\n" +
-                        "Detalles técnicos:\n" + e1.getMessage()
-                    );
+				vaciarTablas();
+				cargarCategorias();//reseteamos categorias
+			} catch (SQLException e) {
+				 DialogosPantalla.showErrorDB("No se pudo resetear la tabla.", e);
 			}
     	}
 	}
 	
-	private void borrarTareas() throws SQLException {
-		tabla_tareas.limpiarTabla();
+	//-----METODOS UTILIARIOS
+	
+	private void vaciarTablas() throws SQLException {
+		tablaTareas.limpiarTabla();
 		repoTareas.vaciarTablas();
-		tabla_tareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
+		tablaTareas.setPlaceHolder("Ingresa tus tareas con el boton \"Nueva tarea\"");
 	}
+	
+	private Tarea validarSeleccion() {
+        Tarea t = tablaTareas.getTareaSeleccionada();
+        if (t == null) {
+            DialogosPantalla.showError("No hay ninguna fila seleccionada");
+        }
+        return t;
+    }
+
 }
