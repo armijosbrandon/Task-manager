@@ -71,9 +71,11 @@ public class MainView {
 		//PANTALLA PRINCIPAL
 		//contenedor de titulo
 		HBox contTitulo = new HBox(new Label("Gestor de Tareas"));
+		contTitulo.getStyleClass().add("cont-titulo");
 		
 		//caja de busqueda
 		HBox busquedaBox = new HBox(txtBusqueda,btnBusqueda);
+		busquedaBox.getStyleClass().add("search-box");
 		//ACCIONES PRINCIPALES
 		HBox contAcciones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnMarcarProgresoTarea,btnCompletarTarea,busquedaBox,btnFiltrarTarea);
 		
