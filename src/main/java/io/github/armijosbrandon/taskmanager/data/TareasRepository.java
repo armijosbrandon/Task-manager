@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager.data;
+package io.github.armijosbrandon.taskmanager.data;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import io.github.ArmijosBrandon.TaskManager.model.Tarea;
+import io.github.armijosbrandon.taskmanager.model.Tarea;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

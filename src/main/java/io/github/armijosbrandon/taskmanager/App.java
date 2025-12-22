@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.armijosbrandon.taskmanager;
 
 public class App {
     public static void main(String[] args) {

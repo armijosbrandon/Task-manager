@@ -1,18 +1,17 @@
-package io.github.ArmijosBrandon.TaskManager.controller;
-//---ARCHIVOS VINCULADOS
-import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.data.CategoriasRepository;
-import io.github.ArmijosBrandon.TaskManager.data.SearchRepository;
-import io.github.ArmijosBrandon.TaskManager.data.TareasRepository;
-import io.github.ArmijosBrandon.TaskManager.model.Tarea;
-import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
-import io.github.ArmijosBrandon.TaskManager.view.TablaTareasView;
-
+package io.github.armijosbrandon.taskmanager.controller;
 // --- LIBRERIAS
 import java.sql.SQLException;
 import java.time.LocalDate;
 import org.controlsfx.control.textfield.AutoCompletionBinding; //autocompletado de textfield, use dependencias externas
 import org.controlsfx.control.textfield.TextFields; //componente que se autocompleta,
+
+import io.github.armijosbrandon.taskmanager.DialogosPantalla;
+import io.github.armijosbrandon.taskmanager.data.CategoriasRepository;
+import io.github.armijosbrandon.taskmanager.data.SearchRepository;
+import io.github.armijosbrandon.taskmanager.data.TareasRepository;
+import io.github.armijosbrandon.taskmanager.model.Tarea;
+import io.github.armijosbrandon.taskmanager.view.FormularioTareasView;
+import io.github.armijosbrandon.taskmanager.view.TablaTareasView;
 import javafx.collections.ObservableList;
 import javafx.scene.layout.Pane;
 

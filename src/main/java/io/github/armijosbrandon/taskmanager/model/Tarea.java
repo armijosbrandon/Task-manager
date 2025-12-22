@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager.model;
+package io.github.armijosbrandon.taskmanager.model;
 
 import java.time.LocalDate;
 

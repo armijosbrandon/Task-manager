@@ -1,11 +1,11 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.armijosbrandon.taskmanager;
 
 
 import java.sql.SQLException;
 
-import io.github.ArmijosBrandon.TaskManager.controller.Controller;
-import io.github.ArmijosBrandon.TaskManager.data.DataBaseManager;
-import io.github.ArmijosBrandon.TaskManager.view.MainView;
+import io.github.armijosbrandon.taskmanager.controller.Controller;
+import io.github.armijosbrandon.taskmanager.data.DataBaseManager;
+import io.github.armijosbrandon.taskmanager.view.MainView;
 import javafx.application.Application;
 
 

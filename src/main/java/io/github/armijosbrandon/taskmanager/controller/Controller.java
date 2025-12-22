@@ -1,16 +1,16 @@
-package io.github.ArmijosBrandon.TaskManager.controller;
-
-import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.data.CategoriasRepository;
-import io.github.ArmijosBrandon.TaskManager.data.DataBaseManager;
-import io.github.ArmijosBrandon.TaskManager.data.SearchRepository;
-import io.github.ArmijosBrandon.TaskManager.data.TareasRepository;
-import io.github.ArmijosBrandon.TaskManager.view.FormFiltrarView;
-import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
-import io.github.ArmijosBrandon.TaskManager.view.MainView;
-import io.github.ArmijosBrandon.TaskManager.view.TablaTareasView;
+package io.github.armijosbrandon.taskmanager.controller;
 
 import java.sql.SQLException;
+
+import io.github.armijosbrandon.taskmanager.DialogosPantalla;
+import io.github.armijosbrandon.taskmanager.data.CategoriasRepository;
+import io.github.armijosbrandon.taskmanager.data.DataBaseManager;
+import io.github.armijosbrandon.taskmanager.data.SearchRepository;
+import io.github.armijosbrandon.taskmanager.data.TareasRepository;
+import io.github.armijosbrandon.taskmanager.view.FormFiltrarView;
+import io.github.armijosbrandon.taskmanager.view.FormularioTareasView;
+import io.github.armijosbrandon.taskmanager.view.MainView;
+import io.github.armijosbrandon.taskmanager.view.TablaTareasView;
 
 
 

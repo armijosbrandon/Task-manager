@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.armijosbrandon.taskmanager;
 
 
 import javafx.scene.control.Alert;
