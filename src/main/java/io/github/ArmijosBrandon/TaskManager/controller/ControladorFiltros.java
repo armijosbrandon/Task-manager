@@ -2,11 +2,11 @@ package io.github.ArmijosBrandon.TaskManager.controller;
 
 //---archivos vinculados
 import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 import io.github.ArmijosBrandon.TaskManager.Data.CategoriasRepository;
 import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
 import io.github.ArmijosBrandon.TaskManager.model.Tarea;
 import io.github.ArmijosBrandon.TaskManager.view.FormFiltrarView;
+import io.github.ArmijosBrandon.TaskManager.view.TablaTareasView;
 
 //--LIBRERIAS
 import java.sql.SQLException;
@@ -19,6 +19,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
@@ -37,9 +38,9 @@ public class ControladorFiltros {
 	private Popup popupPrioridades;
 	private Popup popupEstados;
 	
-	private ComboBox<String> comboCategorias;
-	private ComboBox<String> comboPrioridades;
-	private ComboBox<String> comboEstados;
+	private ToggleButton  categoriaTButton;
+	private ToggleButton prioridadesTButton;
+	private ToggleButton estadosTButton;
 	
 	private Set<String> categoriasSeleccionadas = new HashSet<>();//coleccion que no permite elementos repetidos
 	private Set<String> prioridadesSeleccionadas = new HashSet<>();
@@ -61,41 +62,57 @@ public class ControladorFiltros {
 	    popupCategoria = formFiltrarView.getPopupCategorias();
 	    popupPrioridades = formFiltrarView.getPopupPrioridades();
 	    popupEstados = formFiltrarView.getPopupEstados();
-	    comboCategorias = formFiltrarView.getCategoriaCombo();
-	    comboPrioridades = formFiltrarView.getPrioridadCombo();
-	    comboEstados = formFiltrarView.getEstadoCombo();
+	    categoriaTButton = formFiltrarView.getCategoriaTButton();
+	    prioridadesTButton = formFiltrarView.getPrioridadTButton();
+	    estadosTButton = formFiltrarView.getEstadoTButton();
 	    columnasCategorias = formFiltrarView.getCategoriaCheckContainer();
 	}
 
 	
 	private void inicializarEventos() {
-		comboCategorias.setOnMouseClicked(e ->cargarCategoriasCombo());
+		categoriaTButton.setOnMouseClicked(e ->mostrarPopupCategorias());
         
-        comboPrioridades.setOnMouseClicked(e->{
-        	mostrarPopupDebajo(popupPrioridades, comboPrioridades);
+        prioridadesTButton.setOnMouseClicked(e->{
+        	mostrarPopupDebajo(popupPrioridades, prioridadesTButton);
         });
         
-        comboEstados.setOnMouseClicked(e->{
-        	mostrarPopupDebajo(popupEstados, comboEstados);
+        estadosTButton.setOnMouseClicked(e->{
+        	mostrarPopupDebajo(popupEstados, estadosTButton);
         });
         
         formFiltrarView.getBtnFiltrar().setOnAction(e->filtrarTareas());
 		
 	}
 	
-	//----METODO USADO POR EL CONTROLLER PRINCIPAL
+	
 	public void mostrarPopUpFiltrar(Button btnFiltrar) {
+
 		formFiltrarView.setAutoHide(true);//hacer que se cierre al clickear fuera de el
-    	if (!formFiltrarView.isShowing()) {//solo mostrar si no se esta mostrando, para evitar que espame el boton y salgan muchas
-    		 formFiltrarView.show(btnFiltrar,//objeto de referencia para posicion del popup
-    				 btnFiltrar.localToScreen(0, btnFiltrar.getHeight()).getX(),//0 px desde el boton en x
-    				 btnFiltrar.localToScreen(0, btnFiltrar.getHeight()).getY());
-    	    }
 		
+    	if (formFiltrarView.isShowing()) {//solo mostrar si no se esta mostrando, para evitar que espame el boton y salgan muchas
+	        formFiltrarView.hide();
+	        return;
+	    }
+
+	    // Posición del botón en pantalla
+	    double buttonRightX = btnFiltrar.localToScreen(btnFiltrar.getWidth(), 0).getX(); //localizar el final en x del boton filtrar
+
+	    double buttonBottomY = btnFiltrar.localToScreen(0, btnFiltrar.getHeight()).getY(); //localizar la pocision en y del boton en 0 px desde su inicio
+
+	    //forzar layout para obtener el ancho real del popup, al principio solo esta con el pref width,etc.
+	    formFiltrarView.getScene().getRoot().applyCss(); //“Aplica todos los estilos CSS ahora mismo” 
+	    formFiltrarView.getScene().getRoot().layout();//“Calcula posiciones y tamaños AHORA”
+
+	    double popupWidth = formFiltrarView.getWidth(); //calculamos el ancho real de nuestro popop de filtrado
+
+	    double popupX = buttonRightX - popupWidth; // a la posicion final de nuestro boton de filtrar le restamos nuestro form de filtrado para q se empieze a dibujar desde ahi y termine en ese tope
+
+	    formFiltrarView.show(btnFiltrar, popupX, buttonBottomY);
 	}
+
 	
 	//--METODOS DE BOTONES Y COMBOS
-	private void cargarCategoriasCombo() {
+	private void mostrarPopupCategorias() {
 		ObservableList<String> categorias = null;//lista que escucha cambios automaticamente
 		try {
 			categorias = repoCategorias.obtenerCategorias();//cargamos nuestras categorias actuales
@@ -144,7 +161,7 @@ public class ControladorFiltros {
 
     	// --- MOSTRAR POPUP ---
     	popupCategoria.getContent().add(columnasCategorias);
-    	mostrarPopupDebajo(popupCategoria, comboCategorias);
+    	mostrarPopupDebajo(popupCategoria, categoriaTButton);
 	}
 	
 	private void filtrarTareas(){
@@ -202,7 +219,7 @@ public class ControladorFiltros {
 	    }
 	}
 	
-	private void mostrarPopupDebajo(Popup popup, ComboBox<String> dueño) {
+	private void mostrarPopupDebajo(Popup popup, ToggleButton dueño) {
 	    // Si ya está abierto → cerrarlo (toggle)
 	    if (popup.isShowing()) {
 	        popup.hide();

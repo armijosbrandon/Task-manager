@@ -1,0 +1,103 @@
+*{
+	-fx-text-fill: #171717;
+}
+
+/* Contenedor del formulario */
+.root-form {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E5E7EB;
+    -fx-border-radius: 16px;
+    -fx-background-radius: 16px;
+}
+
+/* Título del formulario */
+.root-form > .label:first-child { /*el primer hijo directo que sea label*/
+    -fx-font-size: 2em;
+    -fx-text-fill: #6B4EFF;
+    -fx-font-weight: bold;
+}
+
+/* Labels */
+.root-form .label {
+    -fx-text-fill: #171717;
+    -fx-font-weight: 600;
+}
+
+/* --------------IMPUTS-----*/
+.text-field,
+.combo-box,
+.date-picker,
+.text-area {
+    -fx-background-color: #F9FAFB;
+    -fx-border-color: #D1D5DB;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 5px
+}
+
+/* Foco en inputs */
+.text-field:focused,
+.combo-box:focused,
+.date-picker:focused,
+.text-area:focused {
+    -fx-border-color: #6B4EFF;
+    -fx-border-width: 2px;
+}
+
+/*---------ESTILOS EXTRAS---------*/
+
+/* DatePicker - campo interno */
+.date-picker .text-field { /*PARA QUE NO QUEDE CON BORDE INTERNO DEL TEXTFIELD*/
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+
+/* TextArea - ScrollPane */
+.text-area .content {
+    -fx-background-color: #F9FAFB;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: #F9FAFB;
+    -fx-border-color: transparent;
+}
+
+
+/*Hover de elementos de un combobox*/
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #EDE9FE;
+    -fx-text-fill: #171717;
+}
+
+/*elementos seleccionados de un combobox*/
+.combo-box-popup .list-view .list-cell:selected {
+    -fx-background-color: #6B4EFF;
+    -fx-text-fill: white;
+}
+
+/* Día seleccionado */
+.date-picker-popup .selected {
+    -fx-background-color: #6B4EFF;
+    -fx-text-fill: white;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: #e0e0e0;
+}
+
+/*---------- Botones------- */
+.button {
+    -fx-background-color: #22C55E;
+    -fx-text-fill: #F5F6F8;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 5px 18px;
+}
+
+.button:hover {
+    -fx-background-color: #16A34A;
+}
+
+
+

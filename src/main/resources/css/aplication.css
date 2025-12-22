@@ -2,7 +2,7 @@
 	-fx-text-fill: #171717;
 }
 .root{
-	-fx-background-color: 
+	-fx-background-color: #F4F5F9;
 }
 .cont-titulo{
 	-fx-alignment: center;
@@ -12,13 +12,14 @@
     -fx-text-fill: #6B4EFF;    /* Color del texto */
 }
 .button{
-	-fx-background-color: #00FF00; 
-	-fx-border-radius: 15px;		/* Bordes redondeados */
+	-fx-background-color: #22C55E; 
+	-fx-border-radius: 12px;		/* Bordes redondeados */
 	-fx-text-fill: #F5F6F8;   
 	-fx-font-weight: bold; /* negrita */
+	-fx-padding: 8px 18px; 
 }
 .button:hover{
-	-fx-background-color:#04B90C;
+	-fx-background-color:#16A34A;
 }
 
 /*selector de etiqueta de iconos, aplica a todos */
@@ -28,17 +29,23 @@
 }
 
 .search-box{
-	
+	-fx-background-color: #F9FAFB;
+	-fx-border-color: #D1D5DB;
+	-fx-border-radius: 10px;
+	-fx-background-radius: 10px;	
+	-fx-padding: 5px
+}
+.search-box .button{
+	-fx-background-color: transparent;
 }
 
-.search-box .button{
-	-fx-background-color: #ffffff;
-	-fx-border-color: transparent;
-    -fx-border-width: 0;
+.search-box .text-field{
+	-fx-background-color: transparent;
+	-fx-border-color: none;
 }
 
 .search-box .ikonli-font-icon{
-	-fx-text-fill: #171717;
+	-fx-fill: #171717;
 }
 
 

@@ -1,7 +1,6 @@
 package io.github.ArmijosBrandon.TaskManager.controller;
 
 import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 import io.github.ArmijosBrandon.TaskManager.Data.CategoriasRepository;
 import io.github.ArmijosBrandon.TaskManager.Data.DataBaseManager;
 import io.github.ArmijosBrandon.TaskManager.Data.SearchRepository;
@@ -9,6 +8,7 @@ import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
 import io.github.ArmijosBrandon.TaskManager.view.FormFiltrarView;
 import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
 import io.github.ArmijosBrandon.TaskManager.view.MainView;
+import io.github.ArmijosBrandon.TaskManager.view.TablaTareasView;
 
 import java.sql.SQLException;
 
@@ -79,7 +79,7 @@ public class Controller {
 	
 	//CONTROLADORES EXTERNOS PARA EVITAR EXCESO DE CODIGO Y RESPONSABILIDADES COMPARTIDAS EN UN SOLO ARCHIVO
 	private void inicializarControladores() {
-		controladorTareas= new ControladorTareas(tablaTareas, form, repoTareas, repoCategorias,repoSearch);
+		controladorTareas= new ControladorTareas(tablaTareas, form, repoTareas, repoCategorias,repoSearch,mainView.getOverlay());
 		controladorFiltros= new ControladorFiltros(formFiltrarView, tablaTareas, repoTareas,repoCategorias);
 	}
 

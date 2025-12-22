@@ -1,21 +1,24 @@
 package io.github.ArmijosBrandon.TaskManager.controller;
 //----------ARCHIVOS VINCULADOS
 import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
 import io.github.ArmijosBrandon.TaskManager.model.Tarea;
 import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
+import io.github.ArmijosBrandon.TaskManager.view.TablaTareasView;
 
 //----------Librerias
 import java.sql.SQLException;
 import java.time.LocalDate;
 import javafx.scene.control.Button;
+import javafx.scene.layout.Pane;
 
 public class ControladorForms {
 	//VIEWS INVOLUCRADAS
 	private final FormularioTareasView form;
 	private final TablaTareasView tablaTareas;
 	
+	//OVERLAY PARA CUANDO APARESCA EL FORM
+	private final Pane overlay;
 	//REPOSITORIOS
 	private final TareasRepository repoTareas;
 	
@@ -34,10 +37,11 @@ public class ControladorForms {
 	private final Button btnComfirmarCambios;
 	private final Button btnGuardarTarea;
 
-	public ControladorForms(FormularioTareasView form, TablaTareasView tabla_tareas, TareasRepository repoTareas) {
+	public ControladorForms(FormularioTareasView form, TablaTareasView tabla_tareas, TareasRepository repoTareas, Pane overlay) {
 		this.form=form;
 		this.tablaTareas=tabla_tareas;
 		this.repoTareas=repoTareas;
+		this.overlay=overlay;
 		btnGuardarTarea= form.getBtnGuardarTarea();
     	btnComfirmarCambios= form.getBtnConfirmarCambios();
 		inicializarEventos();
@@ -158,6 +162,8 @@ public class ControladorForms {
 	}
 	
 	private void mostrarFormulario(Boolean mostrar) {
+		overlay.setVisible(mostrar);
+		overlay.setManaged(mostrar);
 		form.setVisible(mostrar);
     	form.setManaged(mostrar);
 	}

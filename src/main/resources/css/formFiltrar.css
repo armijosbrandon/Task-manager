@@ -1,0 +1,31 @@
+*{
+	-fx-text-fill: #171717;
+	
+}
+.root{
+	-fx-background-color: #FFFFFF;
+	-fx-padding: 10;
+	-fx-border-width: 2;
+	-fx-border-color: #E5E7EB;
+	-fx-border-radius: 16px;
+	-fx-background-radius: 16px;
+}
+.label{
+	-fx-text-fill: #6B4EFF;
+	-fx-font-weight: bold; 
+}
+.toggle-button {
+	-fx-background-color: #F9FAFB;
+	-fx-border-color: #D1D5DB;
+	-fx-border-radius: 10px;
+	-fx-background-radius: 10px;
+	-fx-padding: 5px 18px;
+}
+
+.ikonli-font-icon {
+    -fx-fill: #171717;       /* color del icono */
+}
+
+.button >.ikonli-font-icon {
+	-fx-fill: white; 
+}

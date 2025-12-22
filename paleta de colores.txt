@@ -1,0 +1,33 @@
+Paleta de colores – Task Manager
+
+Colores primarios
+-Violeta principal: #6B4EFF
+-Violeta claro (hover / selección): #8C73FF, #EDE9FE
+
+Colores de acción
+-Verde principal (acciones): #22C55E
+-Verde hover: #16A34A
+
+Fondos
+-Fondo app: #F4F5F9
+-Fondo formulario / tarjetas: #FFFFFF
+-Fondo inputs: #F9FAFB
+
+
+
+Neutros / bordes
+-Texto principal: #171717
+-Texto secundario: #374151
+-Bordes inputs: #D1D5DB
+-Borde contenedores: #E5E7EB
+
+
+
+Tablas
+-Fila impar: #FFFFFF
+-Fila par: #E9E9E9
+-Fila seleccionada: #8C73FF
+
+Identidad visual (en una línea)
+
+Violeta = identidad / selección · Verde = acción · Grises = estructura

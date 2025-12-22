@@ -1,14 +1,14 @@
 package io.github.ArmijosBrandon.TaskManager.view;
 
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import org.kordamp.ikonli.javafx.FontIcon;
-
-import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 
 
 
@@ -33,7 +33,8 @@ public class MainView {
     private final Button btnResetearTareas;
 
     //--------FORMULARIO DE EDICION Y CREACION DE TAREAS
-    private final FormularioTareasView form;
+    private final Pane overlay;//overlay que bloquea interacion de la pantalla principal cuando se abre el form
+	private final FormularioTareasView form;
 	
 	public MainView(Stage stage) {
 		this.stage=stage;	
@@ -57,12 +58,16 @@ public class MainView {
 		//datos de prueba
 		btnCargarTareasPrueba = boton("Cargar Tareas de Prueba", "fas-file-download");
 		btnResetearTareas = boton("Resetear Lista", "fas-trash-restore");
-
+	    
 		// formulario de nueva tarea
 		form = new FormularioTareasView();
 		form.setVisible(false);
 		form.setManaged(false);
-		form.setStyle("-fx-background-color: #05f0ad");
+		
+		//overlay que bloquea interacion de la pantalla principal cuando se abre el form
+		overlay= new Pane();
+		overlay.setVisible(false);
+		overlay.setManaged(false);
 		
 		initializeUI();
 	}
@@ -71,32 +76,57 @@ public class MainView {
 		//PANTALLA PRINCIPAL
 		//contenedor de titulo
 		HBox contTitulo = new HBox(new Label("Gestor de Tareas"));
-		contTitulo.getStyleClass().add("cont-titulo");
-		
 		//caja de busqueda
-		HBox busquedaBox = new HBox(txtBusqueda,btnBusqueda);
-		busquedaBox.getStyleClass().add("search-box");
+		HBox busquedaBox = new HBox(txtBusqueda,btnBusqueda); //para juntar en una sola caja la lupa y el textfield
+				
+		Region spacing = new Region(); //espacio en blanco que crece todo el espacio disponible
+		HBox.setHgrow(spacing, Priority.ALWAYS);
 		//ACCIONES PRINCIPALES
-		HBox contAcciones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnMarcarProgresoTarea,btnCompletarTarea,busquedaBox,btnFiltrarTarea);
+		HBox contAcciones= new HBox(10,btnNuevaTarea, btnEditarTarea,btnBorrarTarea,btnMarcarProgresoTarea,btnCompletarTarea,spacing,busquedaBox,btnFiltrarTarea);
 		
 		//seccion para pruebas
 		HBox botonesPrueba = new HBox(10, btnCargarTareasPrueba, btnResetearTareas);
 		
-		VBox pantallaPrincipal= new VBox(10,contTitulo,contAcciones,getTablaTareasView(),botonesPrueba);
-		
-		StackPane root= new StackPane(pantallaPrincipal,form); //stackpane para ponder uno encima de otro
+		VBox pantallaPrincipal= new VBox(10,contTitulo,contAcciones,tablaTareasView,botonesPrueba);//elementos visibles pricnipales
+		StackPane root= new StackPane(pantallaPrincipal,overlay,form); //stackpane para poner uno encima de otro
 		Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/aplication.css").toExternalForm());
+        
         stage.setScene(scene);
         stage.setMaximized(true);
 		stage.setTitle("Gestor de Tareas");
+		
+		
+		
+		//---estilos
+		scene.getStylesheets().add(getClass().getResource("/css/aplication.css").toExternalForm());
+		pantallaPrincipal.setPadding(new Insets(20));
+		
+		//titulo
+		contTitulo.setAlignment(Pos.CENTER);
+		contTitulo.getStyleClass().add("cont-titulo");
+		
+		//acciones
+		contAcciones.setAlignment(Pos.CENTER);
+		//busqueda 
+		busquedaBox.getStyleClass().add("search-box");
+		busquedaBox.setAlignment(Pos.CENTER);
+		txtBusqueda.setPrefWidth(350);//el ancho que debe tener el txt de busqueda si hay espacio en el contenedor padre
+		
+		
+		
+		//table view
+		VBox.setVgrow(tablaTareasView, Priority.ALWAYS);
+		
+		//form
+		overlay.setStyle("-fx-background-color: rgba(0,0,0,0.4);");
+		StackPane.setAlignment(form, Pos.CENTER);
 	}
 	
 	private Button boton(String texto, String icon) { //metodo Helper para crear botones con misma logica y diseño
 	    Button b = new Button(texto);
 	    b.setGraphic(new FontIcon(icon));
 	    b.setContentDisplay(ContentDisplay.RIGHT);
-	    return b;
+	   	return b;
 	}
 
 	  // ----GETTERS EXTERNOS PARA EL CONTROLLER -----
@@ -116,7 +146,8 @@ public class MainView {
 
     public TablaTareasView getTablaTareasView() { return tablaTareasView; }
     public FormularioTareasView getFormularioTareasView() { return form; }
-
+    public Pane getOverlay() {return overlay;	}
+    
 	public void show() {
 		stage.show();
 		

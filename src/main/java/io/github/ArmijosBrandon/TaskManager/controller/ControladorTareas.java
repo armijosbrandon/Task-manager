@@ -1,12 +1,12 @@
 package io.github.ArmijosBrandon.TaskManager.controller;
 //---ARCHIVOS VINCULADOS
 import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.TablaTareasView;
 import io.github.ArmijosBrandon.TaskManager.Data.CategoriasRepository;
 import io.github.ArmijosBrandon.TaskManager.Data.SearchRepository;
 import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
 import io.github.ArmijosBrandon.TaskManager.model.Tarea;
 import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
+import io.github.ArmijosBrandon.TaskManager.view.TablaTareasView;
 
 // --- LIBRERIAS
 import java.sql.SQLException;
@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import org.controlsfx.control.textfield.AutoCompletionBinding; //autocompletado de textfield, use dependencias externas
 import org.controlsfx.control.textfield.TextFields; //componente que se autocompleta,
 import javafx.collections.ObservableList;
+import javafx.scene.layout.Pane;
 
 public class ControladorTareas {
 	
@@ -34,14 +35,14 @@ public class ControladorTareas {
 	private final CategoriasRepository repoCategorias;
 	private final SearchRepository repoSearch;
 	
-	public ControladorTareas(TablaTareasView tablaTareas, FormularioTareasView form, TareasRepository repoTareas, CategoriasRepository repoCategorias,SearchRepository repoSearch) {
+	public ControladorTareas(TablaTareasView tablaTareas, FormularioTareasView form, TareasRepository repoTareas, CategoriasRepository repoCategorias,SearchRepository repoSearch, Pane overlay) {
 		this.tablaTareas=tablaTareas;
 		this.form=form;
 		this.repoTareas=repoTareas;
 		this.repoCategorias=repoCategorias;
 		this.repoSearch = repoSearch;
 		cargarCategorias();//cargamos las categorias de la base de datos al texfield vinculado
-		controladorForms= new ControladorForms(form, tablaTareas, repoTareas);//instancio el controlador y ejecuto sus metodos iniciales
+		controladorForms= new ControladorForms(form, tablaTareas, repoTareas,overlay);//instancio el controlador y ejecuto sus metodos iniciales
 		
 	}
 	

@@ -2,6 +2,7 @@ package io.github.ArmijosBrandon.TaskManager.view;
 
 import java.time.LocalDate;
 
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -9,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 public class FormularioTareasView extends VBox{
@@ -57,6 +59,18 @@ public class FormularioTareasView extends VBox{
 		HBox botonesform= new HBox(10,btnGuardarTarea,btnConfirmarCambios,btnCancelar);
 		
 		this.getChildren().addAll(Titulo, lblNombre, txtNombreTarea, lblFechaInicio, fechaInicio, lblFechaFinal, fechaFinal, lblCategoria, txtCategoria, cbPrioridad, cbEstado, lblObservacion, txtObservacion, botonesform);
+		
+		
+		//------ESTILOS
+		this.setPadding(new Insets(20));
+		this.setSpacing(10);
+		
+		setMaxWidth(800);                  // límite visual
+	    setMinWidth(320);                  // móviles / ventanas pequeñas, debajo de esto se rompe visualmente
+	    setMaxHeight(Region.USE_PREF_SIZE);// usa el tamaño que ocupan los componentes
+	    
+		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
+		this.getStyleClass().add("root-form");
 	}
 	
 	//------GETTERS Y SETTERS

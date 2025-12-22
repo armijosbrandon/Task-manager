@@ -1,4 +1,4 @@
-package io.github.ArmijosBrandon.TaskManager;
+package io.github.ArmijosBrandon.TaskManager.view;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +12,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 
@@ -85,7 +86,7 @@ public class TablaTareasView extends VBox {
 			    colEstado,
 			    colObservacion
 		);
-		
+		VBox.setVgrow(tablaTareas, Priority.ALWAYS);
 	}
 	
 	//OBTENER TAREA SELECCIONADA POR EL USUARIO

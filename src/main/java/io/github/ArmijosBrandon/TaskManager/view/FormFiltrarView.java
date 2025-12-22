@@ -1,15 +1,16 @@
 package io.github.ArmijosBrandon.TaskManager.view;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Popup;
 public class FormFiltrarView extends Popup{
 	
 	// Combobox principales
-    private final ComboBox<String> categoriaCombo;
-    private final ComboBox<String> prioridadCombo;
-    private final ComboBox<String> estadoCombo;
+    private final ToggleButton  categoria;
+    private final ToggleButton  prioridad;
+    private final ToggleButton  estado;
 
     private final Popup popupCategorias;
     private final Popup popupPrioridades;
@@ -26,13 +27,13 @@ public class FormFiltrarView extends Popup{
 	public FormFiltrarView() {
 		
 		// --------- COMBOBOX PRINCIPALES ---------
-        categoriaCombo = crearComboBox("Seleccionar");
-        prioridadCombo = crearComboBox("Seleccionar");
-        estadoCombo = crearComboBox("Seleccionar");
+        categoria = crearTButton("Seleccionar");
+        prioridad = crearTButton("Seleccionar");
+        estado = crearTButton("Seleccionar");
         
-        VBox categoriaBox = new VBox(new Label("Categoría:"), categoriaCombo);
-        VBox prioridadBox = new VBox(new Label("Prioridad:"), prioridadCombo);
-        VBox estadoBox = new VBox(new Label("Estado:"), estadoCombo);
+        VBox categoriaBox = new VBox(new Label("Categoría:"), categoria);
+        VBox prioridadBox = new VBox(new Label("Prioridad:"), prioridad);
+        VBox estadoBox = new VBox(new Label("Estado:"), estado);
 		
 		//------POPUPS-------
         //a cateogiras no voy a darle un grupo de checks por determinado, si no que sera dinamico segun las categorias usadas por el usuario, esto se maneja en el controlador
@@ -55,15 +56,22 @@ public class FormFiltrarView extends Popup{
 		//---Layout Principal
 		HBox contenedorCombos= new HBox(15, categoriaBox, prioridadBox, estadoBox);
 		VBox root= new VBox(10,contenedorCombos,getBtnFiltrar());
+		
+		root.getStylesheets().add(getClass().getResource("/css/formFiltrar.css").toExternalForm());
+		root.getStyleClass().add("root");
 		this.getContent().add(root);
+		
+
+		
 	}
 	
 	
 	//----------------HELPERS--------
-	private ComboBox<String> crearComboBox(String prompt) {
-        ComboBox<String> cb = new ComboBox<>();
-        cb.setPromptText(prompt);
-        return cb;
+	private ToggleButton  crearTButton(String text) {
+		ToggleButton  tb = new ToggleButton(text) ;
+		tb.setGraphic(new FontIcon("fas-caret-down"));
+		tb.setContentDisplay(ContentDisplay.RIGHT);
+        return tb;
     }
 	
     // Crea una lista vertical de checkboxes
@@ -77,9 +85,9 @@ public class FormFiltrarView extends Popup{
 	
 	
     //--------GETTERS--------
-    public ComboBox<String> getCategoriaCombo() { return categoriaCombo; }
-    public ComboBox<String> getPrioridadCombo() { return prioridadCombo; }
-    public ComboBox<String> getEstadoCombo() { return estadoCombo; }
+    public ToggleButton getCategoriaTButton() { return categoria; }
+    public ToggleButton  getPrioridadTButton() { return prioridad; }
+    public ToggleButton  getEstadoTButton() { return estado; }
 
     public Popup getPopupCategorias() { return popupCategorias; }
     public Popup getPopupPrioridades() { return popupPrioridades; }
