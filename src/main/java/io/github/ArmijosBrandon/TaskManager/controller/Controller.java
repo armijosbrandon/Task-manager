@@ -1,10 +1,10 @@
 package io.github.ArmijosBrandon.TaskManager.controller;
 
 import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.Data.CategoriasRepository;
-import io.github.ArmijosBrandon.TaskManager.Data.DataBaseManager;
-import io.github.ArmijosBrandon.TaskManager.Data.SearchRepository;
-import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
+import io.github.ArmijosBrandon.TaskManager.data.CategoriasRepository;
+import io.github.ArmijosBrandon.TaskManager.data.DataBaseManager;
+import io.github.ArmijosBrandon.TaskManager.data.SearchRepository;
+import io.github.ArmijosBrandon.TaskManager.data.TareasRepository;
 import io.github.ArmijosBrandon.TaskManager.view.FormFiltrarView;
 import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
 import io.github.ArmijosBrandon.TaskManager.view.MainView;

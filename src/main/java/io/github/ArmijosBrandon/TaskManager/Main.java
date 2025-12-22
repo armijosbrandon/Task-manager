@@ -3,8 +3,8 @@ package io.github.ArmijosBrandon.TaskManager;
 
 import java.sql.SQLException;
 
-import io.github.ArmijosBrandon.TaskManager.Data.DataBaseManager;
 import io.github.ArmijosBrandon.TaskManager.controller.Controller;
+import io.github.ArmijosBrandon.TaskManager.data.DataBaseManager;
 import io.github.ArmijosBrandon.TaskManager.view.MainView;
 import javafx.application.Application;
 

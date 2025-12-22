@@ -1,7 +1,7 @@
 package io.github.ArmijosBrandon.TaskManager.controller;
 //----------ARCHIVOS VINCULADOS
 import io.github.ArmijosBrandon.TaskManager.DialogosPantalla;
-import io.github.ArmijosBrandon.TaskManager.Data.TareasRepository;
+import io.github.ArmijosBrandon.TaskManager.data.TareasRepository;
 import io.github.ArmijosBrandon.TaskManager.model.Tarea;
 import io.github.ArmijosBrandon.TaskManager.view.FormularioTareasView;
 import io.github.ArmijosBrandon.TaskManager.view.TablaTareasView;
