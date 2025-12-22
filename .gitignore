@@ -11,3 +11,9 @@ target/
 .project
 .classpath
 .settings/
+# Base de datos local
+*.db
+
+# Archivos personales
+paleta de colores.txt
+css2.txt
