@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -91,6 +92,8 @@ public class MainView {
         stage.setScene(scene);
         stage.setMaximized(true);
 		stage.setTitle("MyTasks");
+		
+		stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/icono-256x256.png")));
 		
 		
 		
