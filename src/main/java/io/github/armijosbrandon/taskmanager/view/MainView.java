@@ -10,9 +10,6 @@ import javafx.scene.layout.*;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-
-
-
 public class MainView {
 	private final Stage stage;
 	//--------SECCION PRINCIPAL
@@ -75,7 +72,7 @@ public class MainView {
 	private void initializeUI() {
 		//PANTALLA PRINCIPAL
 		//contenedor de titulo
-		HBox contTitulo = new HBox(new Label("Gestor de Tareas"));
+		HBox contTitulo = new HBox(new Label("MyTasks"));
 		//caja de busqueda
 		HBox busquedaBox = new HBox(txtBusqueda,btnBusqueda); //para juntar en una sola caja la lupa y el textfield
 				
@@ -93,7 +90,7 @@ public class MainView {
         
         stage.setScene(scene);
         stage.setMaximized(true);
-		stage.setTitle("Gestor de Tareas");
+		stage.setTitle("MyTasks");
 		
 		
 		
